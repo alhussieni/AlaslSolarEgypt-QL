@@ -1238,6 +1238,8 @@ function populateOgPanelPowers() {
   document.getElementById('ogPanelPower').innerHTML = powers.map(p => `<option value="${p}">${p}W</option>`).join('');
 }
 
+let ogSelectedLoads = [];
+
 function populateOgSelectors() {
   const brands = uniqueBrands();
   document.getElementById('ogPanelBrand').innerHTML = brands.map(b => `<option value="${b}">${b}</option>`).join('');
@@ -1254,28 +1256,78 @@ function populateOgSelectors() {
   document.getElementById('ogPsh').value = DATA.offgrid.psh;
   document.getElementById('ogSafetyFactor').value = DATA.offgrid.safetyFactor;
 
-  document.getElementById('ogLoadsList').innerHTML = DATA.offgrid.loads.map((l, i) => `
-    <div class="qlog-grid" style="grid-template-columns:1fr repeat(3,90px); gap:6px; align-items:center; border-bottom:1px solid var(--line-soft); padding:6px 2px;">
-      <div style="font-size:13px;">${l.name} <small style="color:var(--ink-faint);">${l.watt}W</small></div>
-      <input type="number" class="og-load-count" data-load-index="${i}" value="0" min="0" step="1" style="padding:6px 4px; font-size:12.5px; text-align:center;">
-      <input type="number" class="og-load-day" data-load-index="${i}" value="${l.dayHours}" min="0" max="8" step="0.5" style="padding:6px 4px; font-size:12.5px; text-align:center;">
-      <input type="number" class="og-load-night" data-load-index="${i}" value="${l.nightHours}" min="0" max="16" step="0.5" style="padding:6px 4px; font-size:12.5px; text-align:center;">
-    </div>
-  `).join('');
-  document.querySelectorAll('.og-load-count, .og-load-day, .og-load-night').forEach(inp => inp.addEventListener('input', ogRecalc));
+  document.getElementById('ogLoadPicker').innerHTML =
+    DATA.offgrid.loads.map((l, i) => `<option value="${i}">${l.name} (${l.watt}W)</option>`).join('') +
+    `<option value="__custom__">+ جهاز غير مسجل (أضف بياناته)</option>`;
+
+  ogSelectedLoads = []; // ابدأ بقائمة فاضية - الزائر يضيف بس اللي عنده فعلًا
+  renderOgSelectedLoads();
 }
 
+function renderOgSelectedLoads() {
+  const container = document.getElementById('ogSelectedLoadsList');
+  if (!ogSelectedLoads.length) {
+    container.innerHTML = `<p class="qlog-empty">لسه مفيش أجهزة مضافة - اختار من القائمة فوق وداس +</p>`;
+    return;
+  }
+  container.innerHTML = ogSelectedLoads.map((l, i) => `
+    <div class="qlog-grid" style="grid-template-columns:1fr repeat(3,60px) 26px; gap:6px; align-items:center; border-bottom:1px solid var(--line-soft); padding:7px 2px;">
+      <div style="font-size:12.5px;">${l.name} <small style="color:var(--ink-faint);">${l.watt}W</small></div>
+      <input type="number" class="ogsel-count" data-i="${i}" value="${l.count}" min="0" step="1" style="padding:6px 3px; font-size:12px; text-align:center;">
+      <input type="number" class="ogsel-day" data-i="${i}" value="${l.dayHours}" min="0" max="8" step="0.5" style="padding:6px 3px; font-size:12px; text-align:center;">
+      <input type="number" class="ogsel-night" data-i="${i}" value="${l.nightHours}" min="0" max="16" step="0.5" style="padding:6px 3px; font-size:12px; text-align:center;">
+      <button type="button" class="rm" data-rm-i="${i}">×</button>
+    </div>
+  `).join('');
+  container.querySelectorAll('.ogsel-count').forEach(inp => inp.addEventListener('input', () => {
+    ogSelectedLoads[Number(inp.dataset.i)].count = Number(inp.value) || 0; ogRecalc();
+  }));
+  container.querySelectorAll('.ogsel-day').forEach(inp => inp.addEventListener('input', () => {
+    ogSelectedLoads[Number(inp.dataset.i)].dayHours = Number(inp.value) || 0; ogRecalc();
+  }));
+  container.querySelectorAll('.ogsel-night').forEach(inp => inp.addEventListener('input', () => {
+    ogSelectedLoads[Number(inp.dataset.i)].nightHours = Number(inp.value) || 0; ogRecalc();
+  }));
+  container.querySelectorAll('[data-rm-i]').forEach(btn => btn.addEventListener('click', () => {
+    ogSelectedLoads.splice(Number(btn.dataset.rmI), 1);
+    renderOgSelectedLoads();
+    ogRecalc();
+  }));
+}
+
+document.getElementById('ogAddLoadBtn').addEventListener('click', () => {
+  const picker = document.getElementById('ogLoadPicker');
+  const val = picker.value;
+
+  if (val === '__custom__') {
+    openModal({
+      title: 'إضافة جهاز غير مسجل',
+      sub: 'اكتب اسم الجهاز وقدرته بالواط، وهيتحسب زي أي جهاز تاني في القائمة.',
+      fields: [
+        { id: 'nclLoadName', label: 'اسم الجهاز *', type: 'text', placeholder: 'مثال: مضخة مياه 1 حصان' },
+        { id: 'nclLoadWatt', label: 'القدرة (واط) *', type: 'number', step: 1 },
+      ],
+      onConfirm: () => {
+        const name = gmVal('nclLoadName'), watt = gmNum('nclLoadWatt');
+        if (!name || !watt) { toast('اكمل اسم الجهاز والقدرة', 'err'); return; }
+        ogSelectedLoads.push({ name, watt, runningFactor: 1, nightHours: 0, dayHours: 0, count: 1 });
+        closeModal();
+        renderOgSelectedLoads();
+        ogRecalc();
+      }
+    });
+    return;
+  }
+
+  const def = DATA.offgrid.loads[Number(val)];
+  if (!def) return;
+  if (ogSelectedLoads.some(l => l.name === def.name)) { toast('الجهاز ده مضاف بالفعل - زوّد العدد في السطر بتاعه', 'err'); return; }
+  ogSelectedLoads.push({ ...def, count: 1 });
+  renderOgSelectedLoads();
+  ogRecalc();
+});
+
 function readOgInputs() {
-  const loads = DATA.offgrid.loads.map((l, i) => {
-    const dayVal = document.querySelector(`.og-load-day[data-load-index="${i}"]`)?.value;
-    const nightVal = document.querySelector(`.og-load-night[data-load-index="${i}"]`)?.value;
-    return {
-      ...l,
-      count: Number(document.querySelector(`.og-load-count[data-load-index="${i}"]`)?.value) || 0,
-      dayHours: dayVal === '' ? l.dayHours : Number(dayVal),
-      nightHours: nightVal === '' ? l.nightHours : Number(nightVal),
-    };
-  });
   return {
     panelBrand: document.getElementById('ogPanelBrand').value,
     panelPower: Number(document.getElementById('ogPanelPower').value),
@@ -1290,7 +1342,7 @@ function readOgInputs() {
     extraBatteryStrings: document.getElementById('ogExtraBatteryStrings').value,
     installQtyOverride: document.getElementById('ogInstallQtyOverride').value,
     extraDiscountAmount: document.getElementById('ogExtraDiscount').value,
-    loads
+    loads: ogSelectedLoads
   };
 }
 

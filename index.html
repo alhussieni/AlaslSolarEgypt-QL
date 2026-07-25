@@ -255,33 +255,16 @@
         </div>
 
         <div class="card">
-          <h2><span class="num">2</span> اللوح الشمسي</h2>
-          <div class="row2-golden">
-            <div class="field"><label>ماركة اللوح</label><select id="ogPanelBrand"></select></div>
-            <div class="field"><label>قدرة اللوح (واط)</label><select id="ogPanelPower"></select></div>
-          </div>
+          <h2><span class="num">2</span> اختيار الموديلات</h2>
+          <p style="font-size:11px; color:var(--ink-faint); margin-top:-8px;">قدرة الانفرتر وسعة البطارية بتتحددوا تلقائيًا حسب الأحمال اللي هتدخلها تحت.</p>
+          <div class="model-select-row"><label>الانفرتر</label><select id="ogInvBrand"></select></div>
+          <div class="model-select-row"><label>البطارية</label><select id="ogBattBrand"></select></div>
+          <div class="model-select-row"><label>لوح الطاقة</label><select id="ogPanelBrand"></select></div>
+          <div class="model-select-row"><label>قدرة لوح الطاقة</label><select id="ogPanelPower"></select></div>
         </div>
 
         <div class="card">
-          <h2><span class="num">3</span> الانفرتر (أوف جريد)</h2>
-          <div class="field">
-            <label>الماركة</label>
-            <select id="ogInvBrand"></select>
-            <small style="display:block; margin-top:5px; font-size:11px; color:var(--ink-faint);">القدرة والموديل بيتحددوا تلقائيًا حسب إجمالي الأحمال اللي هتدخلها تحت.</small>
-          </div>
-        </div>
-
-        <div class="card">
-          <h2><span class="num">4</span> البطارية</h2>
-          <div class="field">
-            <label>الماركة</label>
-            <select id="ogBattBrand"></select>
-            <small style="display:block; margin-top:5px; font-size:11px; color:var(--ink-faint);">السعة وعدد البطاريات بيتحددوا تلقائيًا حسب الأحمال وجهد الانفرتر.</small>
-          </div>
-        </div>
-
-        <div class="card">
-          <h2><span class="num">5</span> ساعات الشمس ووقت التشغيل</h2>
+          <h2><span class="num">3</span> ساعات الشمس ووقت التشغيل</h2>
           <div class="row2">
             <div class="field"><label>ساعات الشمس القصوى (PSH)</label><input type="number" id="ogPsh" step="0.1"></div>
             <div class="field"><label>هامش أمان</label><input type="number" id="ogSafetyFactor" step="0.01"></div>
@@ -297,12 +280,16 @@
         </div>
 
         <div class="card">
-          <h2><span class="num">6</span> الأحمال (الأجهزة المطلوب تشغيلها)</h2>
-          <p style="font-size:12px; color:var(--ink-faint); margin-top:-8px;">اكتب عدد كل جهاز عندك، وعدد ساعات تشغيله (نهارًا من 8 صباحًا لـ4 عصرًا، وليلًا باقي اليوم). لو مش عارف عدد الساعات بالظبط، سيب الأرقام الافتراضية زي ما هي.</p>
-          <div class="qlog-grid" style="grid-template-columns:1fr repeat(3,90px); gap:6px; font-size:11px; color:var(--ink-faint); margin-bottom:6px; padding:0 2px;">
-            <div>الجهاز</div><div style="text-align:center;">العدد</div><div style="text-align:center;">ساعات نهار</div><div style="text-align:center;">ساعات ليل</div>
+          <h2><span class="num">4</span> الأحمال (الأجهزة المطلوب تشغيلها)</h2>
+          <p style="font-size:12px; color:var(--ink-faint); margin-top:-8px;">اختار الجهاز من القائمة وداس + عشان تضيفه. لو مش لاقي جهازك، اختار "جهاز غير مسجل" واكتب بياناته. ساعات التشغيل: نهارًا من 8 صباحًا لـ4 عصرًا، وليلًا باقي اليوم.</p>
+          <div class="load-picker-row">
+            <select id="ogLoadPicker"></select>
+            <button type="button" class="btn-add-load" id="ogAddLoadBtn">+</button>
           </div>
-          <div id="ogLoadsList"></div>
+          <div class="qlog-grid" style="grid-template-columns:1fr repeat(3,60px) 26px; gap:6px; font-size:10.5px; color:var(--ink-faint); margin:12px 0 4px; padding:0 2px;">
+            <div>الجهاز</div><div style="text-align:center;">العدد</div><div style="text-align:center;">نهار</div><div style="text-align:center;">ليل</div><div></div>
+          </div>
+          <div id="ogSelectedLoadsList"></div>
         </div>
 
         <details class="adv">

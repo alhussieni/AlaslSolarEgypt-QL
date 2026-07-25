@@ -24,10 +24,15 @@ function pickInverterForBrand(data, brand, requiredKW) {
 
 /** يختار بطارية من نفس الماركة بنفس جهد الانفرتر (أو أقرب جهد أقل منه)،
  *  وبأكبر سعة AH متاحة (عشان أقل عدد بطاريات ممكن) */
+/** يختار بطارية من نفس الماركة بجهد يقسم جهد الانفرتر بالظبط (بدون باقي)،
+ *  لأن عدد بطاريات "كسور" على التوالي (Series) مستحيل فيزيائيًا - وبأكبر
+ *  سعة AH متاحة عند أنسب جهد (عشان أقل عدد بطاريات ممكن) */
 function pickBatteryForBrand(data, brand, inverterVoltage) {
   const brandOptions = data.offgrid.batteries.filter(b => b.brand === brand);
   if (!brandOptions.length) return null;
-  const compatible = brandOptions.filter(b => b.voltage <= inverterVoltage);
+  // لازم جهد البطارية يقسم جهد الانفرتر بالظبط (باقي القسمة = صفر) عشان
+  // عدد البطاريات على التوالي (inverterVoltage / batteryVoltage) يبقى عدد صحيح فعلي
+  const compatible = brandOptions.filter(b => b.voltage <= inverterVoltage && inverterVoltage % b.voltage === 0);
   if (!compatible.length) return null;
   const bestVoltage = Math.max(...compatible.map(b => b.voltage));
   const atBestVoltage = compatible.filter(b => b.voltage === bestVoltage);
