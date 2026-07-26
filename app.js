@@ -1265,30 +1265,34 @@ function populateOgSelectors() {
 }
 
 function renderOgSelectedLoads() {
-  const container = document.getElementById('ogSelectedLoadsList');
+  const tbody = document.getElementById('ogSelectedLoadsBody');
+  const emptyMsg = document.getElementById('ogLoadsEmptyMsg');
   if (!ogSelectedLoads.length) {
-    container.innerHTML = `<p class="qlog-empty">لسه مفيش أجهزة مضافة - اختار من القائمة فوق وداس +</p>`;
+    tbody.innerHTML = '';
+    emptyMsg.style.display = 'block';
     return;
   }
-  container.innerHTML = ogSelectedLoads.map((l, i) => `
-    <div class="qlog-grid" style="grid-template-columns:1fr repeat(3,60px) 26px; gap:6px; align-items:center; border-bottom:1px solid var(--line-soft); padding:7px 2px;">
-      <div style="font-size:12.5px;">${l.name} <small style="color:var(--ink-faint);">${l.watt}W</small></div>
-      <input type="number" class="ogsel-count" data-i="${i}" value="${l.count}" min="0" step="1" style="padding:6px 3px; font-size:12px; text-align:center;">
-      <input type="number" class="ogsel-day" data-i="${i}" value="${l.dayHours}" min="0" max="8" step="0.5" style="padding:6px 3px; font-size:12px; text-align:center;">
-      <input type="number" class="ogsel-night" data-i="${i}" value="${l.nightHours}" min="0" max="16" step="0.5" style="padding:6px 3px; font-size:12px; text-align:center;">
-      <button type="button" class="rm" data-rm-i="${i}">×</button>
-    </div>
+  emptyMsg.style.display = 'none';
+  tbody.innerHTML = ogSelectedLoads.map((l, i) => `
+    <tr>
+      <td style="font-family:var(--mono); color:var(--ink-faint); text-align:center;">${i + 1}</td>
+      <td>${l.name} <small style="color:var(--ink-faint);">(${l.watt}W)</small></td>
+      <td><input type="number" class="ogsel-count" data-i="${i}" value="${l.count}" min="0" step="1" style="width:70px; text-align:center;"></td>
+      <td><input type="number" class="ogsel-day" data-i="${i}" value="${l.dayHours}" min="0" max="8" step="0.5" style="width:70px; text-align:center;"></td>
+      <td><input type="number" class="ogsel-night" data-i="${i}" value="${l.nightHours}" min="0" max="16" step="0.5" style="width:70px; text-align:center;"></td>
+      <td><button type="button" class="rm" data-rm-i="${i}">×</button></td>
+    </tr>
   `).join('');
-  container.querySelectorAll('.ogsel-count').forEach(inp => inp.addEventListener('input', () => {
+  tbody.querySelectorAll('.ogsel-count').forEach(inp => inp.addEventListener('input', () => {
     ogSelectedLoads[Number(inp.dataset.i)].count = Number(inp.value) || 0; ogRecalc();
   }));
-  container.querySelectorAll('.ogsel-day').forEach(inp => inp.addEventListener('input', () => {
+  tbody.querySelectorAll('.ogsel-day').forEach(inp => inp.addEventListener('input', () => {
     ogSelectedLoads[Number(inp.dataset.i)].dayHours = Number(inp.value) || 0; ogRecalc();
   }));
-  container.querySelectorAll('.ogsel-night').forEach(inp => inp.addEventListener('input', () => {
+  tbody.querySelectorAll('.ogsel-night').forEach(inp => inp.addEventListener('input', () => {
     ogSelectedLoads[Number(inp.dataset.i)].nightHours = Number(inp.value) || 0; ogRecalc();
   }));
-  container.querySelectorAll('[data-rm-i]').forEach(btn => btn.addEventListener('click', () => {
+  tbody.querySelectorAll('[data-rm-i]').forEach(btn => btn.addEventListener('click', () => {
     ogSelectedLoads.splice(Number(btn.dataset.rmI), 1);
     renderOgSelectedLoads();
     ogRecalc();

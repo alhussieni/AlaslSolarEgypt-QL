@@ -286,10 +286,13 @@
             <select id="ogLoadPicker"></select>
             <button type="button" class="btn-add-load" id="ogAddLoadBtn">+</button>
           </div>
-          <div class="qlog-grid" style="grid-template-columns:1fr repeat(3,60px) 26px; gap:6px; font-size:10.5px; color:var(--ink-faint); margin:12px 0 4px; padding:0 2px;">
-            <div>الجهاز</div><div style="text-align:center;">العدد</div><div style="text-align:center;">نهار</div><div style="text-align:center;">ليل</div><div></div>
+          <div class="tbl-wrap" style="margin-top:14px;">
+            <table class="tbl-edit" id="ogLoadsTable2">
+              <thead><tr><th>#</th><th>الجهاز</th><th>العدد</th><th>ساعات النهار</th><th>ساعات الليل</th><th></th></tr></thead>
+              <tbody id="ogSelectedLoadsBody"></tbody>
+            </table>
           </div>
-          <div id="ogSelectedLoadsList"></div>
+          <p class="qlog-empty" id="ogLoadsEmptyMsg" style="display:none;">لسه مفيش أجهزة مضافة - اختار من القائمة فوق وداس +</p>
         </div>
 
         <details class="adv">
