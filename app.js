@@ -201,6 +201,9 @@ function recalc() {
     ['القدرة المصممة', `${r.H8.toFixed(2)} KW`],
     ['فولت السلسلة (Vimp)', `${r.H10.toFixed(0)} V`],
     ['فولت الفراغ (Voc)', `${r.H11.toFixed(0)} V`],
+    ['أساس حساب حد الفولت', r.stringLimitBasis === 'voc'
+      ? `<span style="color:var(--leaf);">Voc الموديل ✓</span>`
+      : `<span style="color:var(--sun-deep);">حد عام تقريبي ⚠</span>`],
     ['التيار الكلي (Iimp)', `${r.H9.toFixed(1)} A`],
     ['موديل الانفرتر', r.H14.text],
     ['الريأكتور المقترح', `${r.H15} A`],
@@ -727,11 +730,31 @@ function renderAdminForms() {
   // ---- أوف جريد ----
   const ogInvBody = document.querySelector('#ogInvTable tbody');
   ogInvBody.innerHTML = '';
-  DATA.offgrid.inverters.forEach((m, i) => ogInvBody.appendChild(ogInvRow(m, i)));
+  const ogInvBrandSelect = document.getElementById('ogInvBrandFilter');
+  const prevOgInvBrand = ogInvBrandSelect.value;
+  const ogInvBrands = [...new Set(DATA.offgrid.inverters.map(m => m.brand))].sort((a, b) => a.localeCompare(b, 'ar'));
+  ogInvBrandSelect.innerHTML = ogInvBrands.map(b => `<option value="${b}">${b}</option>`).join('');
+  ogInvBrandSelect.value = ogInvBrands.includes(prevOgInvBrand) ? prevOgInvBrand : ogInvBrands[0];
+  const selectedOgInvBrand = ogInvBrandSelect.value;
+  DATA.offgrid.inverters
+    .map((m, i) => [m, i])
+    .filter(([m]) => m.brand === selectedOgInvBrand)
+    .forEach(([m, i]) => ogInvBody.appendChild(ogInvRow(m, i)));
 
   const ogBattBody = document.querySelector('#ogBattTable tbody');
   ogBattBody.innerHTML = '';
-  DATA.offgrid.batteries.forEach((b, i) => ogBattBody.appendChild(ogBattRow(b, i)));
+  const ogBattBrandSelect = document.getElementById('ogBattBrandFilter');
+  const prevOgBattBrand = ogBattBrandSelect.value;
+  const ogBattBrands = [...new Set(DATA.offgrid.batteries.map(b => b.brand))].sort((a, b) => a.localeCompare(b, 'ar'));
+  ogBattBrandSelect.innerHTML = ogBattBrands.map(b => `<option value="${b}">${b}</option>`).join('');
+  ogBattBrandSelect.value = ogBattBrands.includes(prevOgBattBrand) ? prevOgBattBrand : ogBattBrands[0];
+  const selectedOgBattBrand = ogBattBrandSelect.value;
+  DATA.offgrid.batteries
+    .map((b, i) => [b, i])
+    .filter(([b]) => b.brand === selectedOgBattBrand)
+    .forEach(([b, i]) => ogBattBody.appendChild(ogBattRow(b, i)));
+
+  renderAdminSidebar();
 
   const ogLoadsBody = document.querySelector('#ogLoadsTable tbody');
   ogLoadsBody.innerHTML = '';
@@ -741,6 +764,7 @@ function renderAdminForms() {
   document.getElementById('cfgOgSafetyFactor').value = DATA.offgrid.safetyFactor;
   document.getElementById('cfgOgExtraPanels').value = DATA.offgrid.extraPanels;
   document.getElementById('cfgOgChargeSunHours').value = DATA.offgrid.batteryChargeSunHours;
+  document.getElementById('cfgOgSystemEfficiency').value = DATA.offgrid.systemEfficiency;
   document.getElementById('cfgOgPanelMarkup').value = DATA.offgrid.panelMarkupPerWatt;
   document.getElementById('cfgOgSteelCost').value = DATA.offgrid.steelCostPerUnit;
   document.getElementById('cfgOgSteelMargin').value = DATA.offgrid.steelMarginPerUnit;
@@ -774,10 +798,15 @@ function panelRow(p, i) {
 
 function invRow(m, i) {
   const tr = document.createElement('tr');
-  const fields = ['brand','hp','kw','listPrice'];
-  tr.innerHTML = fields.map(f => `<td><input type="${f==='brand'?'text':'number'}" value="${m[f] ?? ''}" data-inv="${i}" data-field="${f}"></td>`).join('') +
+  const fields = ['brand','hp','kw','listPrice','vocMax','mpptMin','mpptMax'];
+  tr.innerHTML = fields.map(f => `<td><input type="${f==='brand'?'text':'number'}" value="${m[f] ?? ''}" placeholder="${['vocMax','mpptMin','mpptMax'].includes(f)?'-':''}" data-inv="${i}" data-field="${f}"></td>`).join('') +
     `<td><button class="rm" data-rm-inv="${i}">×</button></td>`;
   tr.querySelectorAll('input').forEach(inp => inp.addEventListener('input', () => {
+    const isOptionalVoltage = ['vocMax','mpptMin','mpptMax'].includes(inp.dataset.field);
+    if (isOptionalVoltage && inp.value.trim() === '') {
+      DATA.inverter.models[i][inp.dataset.field] = null;
+      return;
+    }
     const val = inp.dataset.field === 'brand' ? inp.value : Number(inp.value);
     DATA.inverter.models[i][inp.dataset.field] = val;
   }));
@@ -789,13 +818,20 @@ function ogInvRow(m, i) {
   const tr = document.createElement('tr');
   const textFields = ['brand', 'type'];
   const numFields = ['voltage', 'powerKW', 'listPrice', 'discount'];
+  const pvFields = ['pvVocMax', 'pvMpptMin', 'pvMpptMax'];
   tr.innerHTML =
     textFields.map(f => `<td><input type="text" value="${m[f] ?? ''}" data-oginv="${i}" data-field="${f}"></td>`).join('') +
     numFields.map(f => `<td><input type="number" step="${f === 'discount' ? '0.01' : '1'}" value="${m[f] ?? ''}" data-oginv="${i}" data-field="${f}"></td>`).join('') +
+    pvFields.map(f => `<td><input type="number" step="1" placeholder="-" value="${m[f] ?? ''}" data-oginv="${i}" data-field="${f}"></td>`).join('') +
     `<td><button class="rm" data-rm-oginv="${i}">×</button></td>`;
   tr.querySelectorAll('input').forEach(inp => inp.addEventListener('input', () => {
-    const isNum = numFields.includes(inp.dataset.field);
-    DATA.offgrid.inverters[i][inp.dataset.field] = isNum ? Number(inp.value) : inp.value;
+    const isText = inp.dataset.field === 'brand' || inp.dataset.field === 'type';
+    const isOptionalPv = pvFields.includes(inp.dataset.field);
+    if (isOptionalPv && inp.value.trim() === '') {
+      DATA.offgrid.inverters[i][inp.dataset.field] = null;
+      return;
+    }
+    DATA.offgrid.inverters[i][inp.dataset.field] = isText ? inp.value : Number(inp.value);
   }));
   tr.querySelector('[data-rm-oginv]').addEventListener('click', () => { DATA.offgrid.inverters.splice(i,1); renderAdminForms(); });
   return tr;
@@ -870,7 +906,66 @@ function simpleRow(obj, i, f1, f2, arr) {
   return tr;
 }
 
+/* ============ لوحة الأدمن: التصميم الهجين (Sidebar + Cards) ============ */
+let adminNav = { section: 'quotes' };
+
+const ADMIN_NAV_STRUCTURE = [
+  { group: 'الإدارة', items: [
+    { id: 'quotes', label: 'سجل عروض الأسعار', icon: '📇' },
+    { id: 'company', label: 'بيانات الشركة والثوابت', icon: 'i' },
+  ]},
+  { group: 'الحاسبة الأساسية', items: [
+    { id: 'panels', label: 'الألواح', icon: '☀' },
+    { id: 'inverters', label: 'الإنفرترات', icon: '⚙', filterId: 'invBrandFilter', brandsFn: () => [...new Set(DATA.inverter.models.map(m => m.brand))].sort((a,b)=>a.localeCompare(b,'ar')) },
+    { id: 'components', label: 'الكابلات والثوابت', icon: '▦' },
+  ]},
+  { group: 'أوف جريد', items: [
+    { id: 'og-inverters', label: 'الانفرترات', icon: '🔋', filterId: 'ogInvBrandFilter', brandsFn: () => [...new Set(DATA.offgrid.inverters.map(m => m.brand))].sort((a,b)=>a.localeCompare(b,'ar')) },
+    { id: 'og-batteries', label: 'البطاريات', icon: '🔋', filterId: 'ogBattBrandFilter', brandsFn: () => [...new Set(DATA.offgrid.batteries.map(b => b.brand))].sort((a,b)=>a.localeCompare(b,'ar')) },
+    { id: 'og-loads', label: 'الأحمال والثوابت', icon: '🔌' },
+  ]},
+];
+
+function setAdminSection(sectionId, brand) {
+  adminNav.section = sectionId;
+  document.querySelectorAll('.admin-section').forEach(el => el.classList.toggle('active', el.dataset.section === sectionId));
+  const item = ADMIN_NAV_STRUCTURE.flatMap(g => g.items).find(it => it.id === sectionId);
+  if (item && item.filterId && brand) {
+    document.getElementById(item.filterId).value = brand;
+  }
+  renderAdminForms();
+}
+
+function renderAdminSidebar() {
+  const nav = document.getElementById('adminSidebar');
+  if (!nav || !DATA) return;
+  const scrollTop = nav.scrollTop;
+  nav.innerHTML = ADMIN_NAV_STRUCTURE.map(group => `
+    <div class="admin-nav-group-label">${group.group}</div>
+    ${group.items.map(item => {
+      const isActive = adminNav.section === item.id;
+      const brands = item.brandsFn ? item.brandsFn() : null;
+      const currentBrand = item.filterId ? document.getElementById(item.filterId).value : null;
+      return `
+        <button type="button" class="admin-nav-item ${isActive ? 'active' : ''}" data-goto-section="${item.id}">
+          <span class="n">${item.icon}</span>${item.label}
+        </button>
+        ${brands ? `
+          <div class="admin-subnav ${isActive ? 'open' : ''}">
+            ${brands.map(b => `<button type="button" class="admin-subnav-item ${isActive && b === currentBrand ? 'active' : ''}" data-goto-section="${item.id}" data-brand="${b}">${b}</button>`).join('')}
+          </div>` : ''}
+      `;
+    }).join('')}
+  `).join('');
+  nav.querySelectorAll('[data-goto-section]').forEach(btn => {
+    btn.addEventListener('click', () => setAdminSection(btn.dataset.gotoSection, btn.dataset.brand));
+  });
+  nav.scrollTop = scrollTop;
+}
+
 document.getElementById('invBrandFilter').addEventListener('change', renderAdminForms);
+document.getElementById('ogInvBrandFilter').addEventListener('change', renderAdminForms);
+document.getElementById('ogBattBrandFilter').addEventListener('change', renderAdminForms);
 document.getElementById('panelsFilter').addEventListener('change', renderAdminForms);
 /* ============================================================
    نافذة منبثقة عامة لإضافة أي منتج (لوح / انفرتر / كابل / صندوق
@@ -952,17 +1047,23 @@ document.getElementById('addInvBtn').addEventListener('click', () => {
   const preselect = document.getElementById('invBrandFilter').value || brands[0];
   openModal({
     title: 'إضافة موديل انفرتر جديد',
-    sub: 'الماركة بتتاخد من قائمة ثابتة عشان تتطابق تمامًا مع جدول الخصومات (من غير فروق كتابة زي Capital/Small).',
+    sub: 'الماركة بتتاخد من قائمة ثابتة عشان تتطابق تمامًا مع جدول الخصومات (من غير فروق كتابة زي Capital/Small). بيانات Voc/MPPT اختيارية - سيبها فاضية لو مش متأكد، واملأها بعدين من الداتا شيت الرسمي.',
     fields: [
       { id:'niBrand', label:'الماركة *', type:'select', options: brands, selected: preselect },
       { id:'niHp', label:'HP *', type:'number', step:0.1 },
       { id:'niKw', label:'KW *', type:'number', step:0.1 },
       { id:'niPrice', label:'السعر (Price List) *', type:'number', step:1 },
+      { id:'niVocMax', label:'Voc الأقصى (اختياري)', type:'number', step:1 },
+      { id:'niMpptMin', label:'MPPT أدنى (اختياري)', type:'number', step:1 },
+      { id:'niMpptMax', label:'MPPT أقصى (اختياري)', type:'number', step:1 },
     ],
     onConfirm: () => {
       const brand = gmVal('niBrand'), hp = gmNum('niHp'), kw = gmNum('niKw'), listPrice = gmNum('niPrice');
       if (!hp || !kw || !listPrice) { toast('من فضلك أكمل HP و KW والسعر', 'err'); return; }
-      DATA.inverter.models.push({ brand, hp, kw, listPrice });
+      const vocMax = gmVal('niVocMax') === '' ? null : gmNum('niVocMax');
+      const mpptMin = gmVal('niMpptMin') === '' ? null : gmNum('niMpptMin');
+      const mpptMax = gmVal('niMpptMax') === '' ? null : gmNum('niMpptMax');
+      DATA.inverter.models.push({ brand, hp, kw, listPrice, vocMax, mpptMin, mpptMax });
       document.getElementById('invBrandFilter').value = brand;
       closeModal();
       renderAdminForms();
@@ -1057,19 +1158,26 @@ document.getElementById('addMcbBtn').addEventListener('click', () => {
 document.getElementById('addOgInvBtn').addEventListener('click', () => {
   openModal({
     title: 'إضافة انفرتر أوف جريد',
+    sub: 'بيانات PV Voc/MPPT اختيارية - سيبها فاضية لو مش متأكد، واملأها بعدين من الداتا شيت الرسمي.',
     fields: [
       { id:'noiBrand', label:'الماركة *', type:'text', placeholder:'مثال: Must' },
       { id:'noiType', label:'النوع *', type:'text', placeholder:'مثال: PV18-3024 PRO' },
-      { id:'noiVoltage', label:'الجهد (V) *', type:'number', step:1 },
+      { id:'noiVoltage', label:'جهد البطارية (V) *', type:'number', step:1 },
       { id:'noiPowerKW', label:'القدرة (KW) *', type:'number', step:0.1 },
       { id:'noiPrice', label:'السعر (Price List) *', type:'number', step:1 },
       { id:'noiDiscount', label:'نسبة الخصم (0-1)', type:'number', step:0.01, placeholder:'مثال: 0.1' },
+      { id:'noiPvVocMax', label:'PV Voc الأقصى (اختياري)', type:'number', step:1 },
+      { id:'noiPvMpptMin', label:'PV MPPT أدنى (اختياري)', type:'number', step:1 },
+      { id:'noiPvMpptMax', label:'PV MPPT أقصى (اختياري)', type:'number', step:1 },
     ],
     onConfirm: () => {
       const brand = gmVal('noiBrand'), type = gmVal('noiType'), voltage = gmNum('noiVoltage'),
         powerKW = gmNum('noiPowerKW'), listPrice = gmNum('noiPrice'), discount = Number(gmVal('noiDiscount')) || 0;
       if (!brand || !type || !voltage || !powerKW || !listPrice) { toast('من فضلك أكمل الحقول الأساسية', 'err'); return; }
-      DATA.offgrid.inverters.push({ brand, type, voltage, powerKW, listPrice, discount });
+      const pvVocMax = gmVal('noiPvVocMax') === '' ? null : gmNum('noiPvVocMax');
+      const pvMpptMin = gmVal('noiPvMpptMin') === '' ? null : gmNum('noiPvMpptMin');
+      const pvMpptMax = gmVal('noiPvMpptMax') === '' ? null : gmNum('noiPvMpptMax');
+      DATA.offgrid.inverters.push({ brand, type, voltage, powerKW, listPrice, discount, pvVocMax, pvMpptMin, pvMpptMax });
       closeModal();
       renderAdminForms();
       populateOgSelectors();
@@ -1162,6 +1270,7 @@ function collectConstantsIntoData() {
   DATA.offgrid.safetyFactor = Number(document.getElementById('cfgOgSafetyFactor').value);
   DATA.offgrid.extraPanels = Number(document.getElementById('cfgOgExtraPanels').value);
   DATA.offgrid.batteryChargeSunHours = Number(document.getElementById('cfgOgChargeSunHours').value);
+  DATA.offgrid.systemEfficiency = Number(document.getElementById('cfgOgSystemEfficiency').value);
   DATA.offgrid.panelMarkupPerWatt = Number(document.getElementById('cfgOgPanelMarkup').value);
   DATA.offgrid.steelCostPerUnit = Number(document.getElementById('cfgOgSteelCost').value);
   DATA.offgrid.steelMarginPerUnit = Number(document.getElementById('cfgOgSteelMargin').value);
@@ -1406,10 +1515,11 @@ function ogRecalc() {
     <div class="spec"><div class="k">عدد السلاسل</div><div class="v">${fmt(r.O8)}</div></div>
     <div class="spec"><div class="k">القدرة اللحظية القصوى</div><div class="v">${fmt(r.R2)} W</div></div>
     <div class="spec"><div class="k">الاحتياج اليومي</div><div class="v">${fmt(r.R5)} Wh</div></div>
-    <div class="spec"><div class="k">إنتاج الألواح اليومي</div><div class="v">${fmt(r.O3)} Wh</div></div>
+    <div class="spec"><div class="k">إنتاج الألواح اليومي الفعلي</div><div class="v">${fmt(r.O3)} Wh <small style="color:var(--ink-faint); font-weight:400;">(بعد فاقد ${Math.round((1-r.systemEfficiency)*100)}%)</small></div></div>
     <div class="spec"><div class="k">القدرة المركبة</div><div class="v">${r.installedKW.toFixed(2)} KW</div></div>
     <div class="spec"><div class="k">عدد الشاسيهات</div><div class="v">${fmt(r.steelQty)}</div></div>
     <div class="spec"><div class="k">التوافق</div><div class="v" style="color:${r.designOkay ? 'var(--leaf)' : 'var(--danger)'};">${r.designOkay ? 'متوافق ✓' : 'غير متوافق ⚠'}</div></div>
+    <div class="spec"><div class="k">ألواح بالسلسلة (PV)</div><div class="v">${r.pvLimitVerified ? fmt(r.panelsPerString) : 'غير محدد'} <small style="color:var(--ink-faint); font-weight:400;">${r.pvLimitVerified ? '× ' + fmt(r.stringCount) + ' سلسلة' : '⚠ بدون بيانات'}</small></div></div>
   `;
 
   document.querySelector('#ogOfferTable tbody').innerHTML = r.offer.rows.map(row => `

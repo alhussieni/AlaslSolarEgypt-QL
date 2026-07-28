@@ -112,16 +112,43 @@ function computeOffgridOffer(data, inputs) {
   const O9 = O7 * O8 * batt.ah * batteryVoltage;    // اجمالي القدرة المخزنة WH
   const O10 = I10 ? (O9 - I10) / I10 : null;        // هامش أمان التخزين (اختياري/عرض فقط)
 
-  /* ---- 5) تصميم مصفوفة الألواح ---- */
+  /* ---- 5) تصميم مصفوفة الألواح ----
+     ملحوظة هندسية: بنضيف "كفاءة النظام الفعلية" (حرارة/أتربة/كابلات/كفاءة
+     تحويل الشاحن) - في الإكسل الأصلي معامل الأمان (10%) كان بيغطي جزء بسيط
+     من الفاقد الحقيقي، لكن الفاقد الفعلي في المناخ الحار عادة أعلى من كده
+     (نفس المنطق المستخدم في أدوات مشابهة زي حاسبة SuRa اللي بتستخدم ~78%) */
   const panelWatt = Number(panel.power);
   const chargeSunHours = Number(og.batteryChargeSunHours);
-  const byBattery = panelWatt ? Math.ceil(O9 / (chargeSunHours * panelWatt)) : 0;
-  const byDailyLoad = panelWatt ? Math.round((R6 / panelWatt) * safetyFactor) : 0;
+  const systemEfficiency = Number(og.systemEfficiency) || 1;
+  const byBattery = panelWatt ? Math.ceil(O9 / (chargeSunHours * panelWatt * systemEfficiency)) : 0;
+  const byDailyLoad = panelWatt ? Math.round((R6 / panelWatt) * safetyFactor / systemEfficiency) : 0;
   const manualPanelAdj = Number(inputs.manualPanelAdj) || 0;
   const extraPanels = inputs.extraPanelsOverride !== undefined && inputs.extraPanelsOverride !== ''
     ? Number(inputs.extraPanelsOverride) : og.extraPanels;
-  const O2 = Math.max(byBattery, byDailyLoad) + manualPanelAdj + extraPanels; // عدد الالواح المطلوبة
-  const O3 = O2 * panelWatt * psh;                 // اجمالي الانتاجية للالواح WH/يوم
+  const O2min = Math.max(byBattery, byDailyLoad) + manualPanelAdj + extraPanels; // الحد الأدنى المطلوب من الطاقة
+  const installedKWmin = (O2min * panelWatt) / 1000;
+
+  /* ---- 5-ب) تصميم السلسلة (Series String) حسب حدود الانفرتر الفعلية للـ PV -----
+     ده بيتأكد إن العدد النهائي للألواح "قابل للتركيب فعليًا" (مضاعف كامل
+     لعدد ألواح السلسلة الواحدة)، ومحصور في نطاق MPPT الحقيقي للانفرتر -
+     مش مجرد رقم نظري من موازنة الطاقة بس */
+  let panelsPerString = null, stringCount = null, stringVimp = null, pvLimitVerified = false;
+  if (inv.pvVocMax && panel.voc) {
+    panelsPerString = Math.max(Math.floor(inv.pvVocMax / panel.voc), 1);
+    stringCount = Math.max(Math.ceil(O2min / panelsPerString), 1);
+    stringVimp = panelsPerString * panel.vimp;
+    pvLimitVerified = true;
+    if (inv.pvMpptMin && stringVimp < inv.pvMpptMin) {
+      errors.push(`فولت التشغيل لسلسلة الألواح (${Math.round(stringVimp)}V) أقل من الحد الأدنى لنطاق MPPT لانفرتر ${inv.brand} ${inv.type} (${inv.pvMpptMin}V) - كفاءة الشحن هتقل.`);
+    }
+    if (inv.pvMpptMax && stringVimp > inv.pvMpptMax) {
+      errors.push(`فولت التشغيل لسلسلة الألواح (${Math.round(stringVimp)}V) أعلى من الحد الأقصى لنطاق MPPT لانفرتر ${inv.brand} ${inv.type} (${inv.pvMpptMax}V) - قلل عدد الألواح بالسلسلة الواحدة أو جرّب موديل تاني.`);
+    }
+  } else {
+    errors.push(`⚠ الانفرتر المختار (${inv.brand} ${inv.type}) مفيهوش بيانات Voc الأقصى للـ PV مسجلة - عدد الألواح محسوب من موازنة الطاقة بس، من غير التأكد إنه قابل للتوصيل الفعلي في سلاسل متوافقة مع مدخل الانفرتر.`);
+  }
+  const O2 = pvLimitVerified ? panelsPerString * stringCount : O2min; // العدد الفعلي القابل للتركيب
+  const O3 = O2 * panelWatt * psh * systemEfficiency; // الإنتاجية اليومية الواقعية (بعد الفاقد) WH
   const installedKW = (O2 * panelWatt) / 1000;
 
   /* ---- 6) عرض السعر (تسعير كل بند: عميل مقابل تكلفة) ---- */
@@ -179,7 +206,8 @@ function computeOffgridOffer(data, inputs) {
     panel, inv, batt,
     R2, R5, R6, R7,
     O2, O3, O6, O7, O8, O9, O10,
-    installedKW, storedKWh: O9 / 1000,
+    installedKW, storedKWh: O9 / 1000, systemEfficiency,
+    panelsPerString, stringCount, stringVimp, pvLimitVerified,
     designOkay, inverterSizeOkay: !invUndersized,
     steelQty, cablesQty, installQty, phaseQty,
     loadRows,

@@ -433,6 +433,11 @@
         </div>
       </div>
 
+      <div class="admin-shell">
+        <nav class="admin-sidebar" id="adminSidebar"></nav>
+        <div class="admin-content">
+
+      <div class="admin-section active" data-section="quotes">
       <div class="card">
         <h2><span class="num">📇</span> سجل عروض الأسعار</h2>
         <p style="font-size:12px; color:var(--ink-faint); margin-top:-8px;">كل عرض أي حد يعمله (عميل، مندوب، أو أدمن) بيتسجل هنا تلقائيًا - اسم العميل ورقم هاتفه وتفاصيل العرض كاملة، عشان ترجعله وقت ما احتجت.</p>
@@ -456,7 +461,9 @@
           <div id="quotesLogLocal" style="margin-top:8px;"></div>
         </div>
       </div>
+      </div>
 
+      <div class="admin-section" data-section="company">
       <div class="admin-top-row">
         <div class="card">
           <h2><span class="num">i</span> بيانات الشركة</h2>
@@ -490,7 +497,9 @@
           </div>
         </div>
       </div>
+      </div>
 
+      <div class="admin-section" data-section="panels">
       <div class="card">
         <h2><span class="num">☀</span> جدول الألواح الشمسية</h2>
         <p style="font-size:12px; color:var(--ink-faint); margin-top:-8px;">لازم كل لوح له سعر (جنيه/واط) عشان يظهر في اختيارات الحاسبة.</p>
@@ -511,23 +520,28 @@
         </div>
         <button class="btn ghost small" id="addPanelBtn" style="margin-top:10px;">+ إضافة لوح</button>
       </div>
+      </div>
 
+      <div class="admin-section" data-section="inverters">
       <div class="card">
         <h2><span class="num">⚙</span> جدول الإنفرترات</h2>
+        <p style="font-size:12px; color:var(--ink-faint); margin-top:-8px;">⚠ خانات "Voc أقصى" و"MPPT" فاضية افتراضيًا عمدًا - املأها من الداتا شيت الرسمي للموديل بس (لا تخمينات). لو الموديل فاضي، الحساب بيرجع تلقائيًا لحد عام تقريبي أقل دقة.</p>
         <div class="compact-grid" id="invDiscountsBox" style="margin-bottom:14px;"></div>
-        <div class="field" style="max-width:260px;">
+        <div class="field" style="max-width:260px; display:none;">
           <label>اختر ماركة الانفرتر لعرض/تعديل موديلاتها</label>
           <select id="invBrandFilter"></select>
         </div>
         <div class="tbl-wrap">
           <table class="tbl-edit" id="invTable">
-            <thead><tr><th>الماركة</th><th>HP</th><th>KW</th><th>السعر (Price List)</th><th></th></tr></thead>
+            <thead><tr><th>الماركة</th><th>HP</th><th>KW</th><th>السعر (Price List)</th><th>Voc أقصى</th><th>MPPT أدنى</th><th>MPPT أقصى</th><th></th></tr></thead>
             <tbody></tbody>
           </table>
         </div>
         <button class="btn ghost small" id="addInvBtn" style="margin-top:10px;">+ إضافة موديل انفرتر</button>
       </div>
+      </div>
 
+      <div class="admin-section" data-section="components">
       <div class="card">
         <h2><span class="num">▦</span> صناديق التجميع (Combiner Box)</h2>
         <div class="row2">
@@ -628,21 +642,27 @@
           <div class="field"><label>هامش الربح للألواح (جنيه/واط)</label><input type="number" id="cfgPanelMarkup" step="0.01"></div>
         </div>
       </div>
+      </div>
 
+      <div class="admin-section" data-section="og-inverters">
       <div class="card">
         <h2><span class="num">🔋</span> أوف جريد - كتالوج الانفرترات</h2>
-        <p style="font-size:12px; color:var(--ink-faint); margin-top:-8px;">الأسعار دي منقولة من ملف إكسل قديم - راجعها وحدّثها من هنا.</p>
+        <p style="font-size:12px; color:var(--ink-faint); margin-top:-8px;">الأسعار دي منقولة من ملف إكسل قديم - راجعها وحدّثها من هنا. خانات "PV Voc/MPPT" دي مواصفات دخول الألواح على الشاحن الداخلي للانفرتر (مختلفة عن جهد البطارية) - فاضية افتراضيًا، املأها من الداتا شيت الرسمي بس.</p>
+        <select id="ogInvBrandFilter" style="display:none;"></select>
         <div class="tbl-wrap">
           <table class="tbl-edit" id="ogInvTable">
-            <thead><tr><th>الماركة</th><th>النوع</th><th>الجهد V</th><th>القدرة KW</th><th>السعر (Price List)</th><th>نسبة الخصم</th><th></th></tr></thead>
+            <thead><tr><th>الماركة</th><th>النوع</th><th>الجهد V</th><th>القدرة KW</th><th>السعر (Price List)</th><th>نسبة الخصم</th><th>PV Voc أقصى</th><th>PV MPPT أدنى</th><th>PV MPPT أقصى</th><th></th></tr></thead>
             <tbody></tbody>
           </table>
         </div>
         <button class="btn ghost small" id="addOgInvBtn" style="margin-top:10px;">+ إضافة انفرتر أوف جريد</button>
       </div>
+      </div>
 
+      <div class="admin-section" data-section="og-batteries">
       <div class="card">
         <h2><span class="num">🔋</span> أوف جريد - كتالوج البطاريات</h2>
+        <select id="ogBattBrandFilter" style="display:none;"></select>
         <div class="tbl-wrap">
           <table class="tbl-edit" id="ogBattTable">
             <thead><tr><th>الماركة</th><th>الجهد V</th><th>السعة AH</th><th>DOD%</th><th>السعر (Price List)</th><th>نسبة الخصم</th><th></th></tr></thead>
@@ -651,7 +671,9 @@
         </div>
         <button class="btn ghost small" id="addOgBattBtn" style="margin-top:10px;">+ إضافة بطارية</button>
       </div>
+      </div>
 
+      <div class="admin-section" data-section="og-loads">
       <div class="card">
         <h2><span class="num">🔌</span> أوف جريد - قائمة الأحمال (الأجهزة)</h2>
         <p style="font-size:12px; color:var(--ink-faint); margin-top:-8px;">دي القائمة اللي بتظهر للعميل يختار عدد كل جهاز عنده.</p>
@@ -673,17 +695,24 @@
         </div>
         <div class="row3">
           <div class="field"><label>ساعات شحن البطارية بالكامل</label><input type="number" id="cfgOgChargeSunHours" step="0.1"></div>
+          <div class="field">
+            <label>كفاءة النظام الفعلية (0-1)</label>
+            <input type="number" id="cfgOgSystemEfficiency" step="0.01" min="0.5" max="1">
+            <small style="display:block; margin-top:5px; font-size:11px; color:var(--ink-faint);">فاقد الحرارة/الأتربة/الكابلات/كفاءة الشاحن مجتمعين - افتراضي 0.78 (زي المعمول به في أدوات مشابهة).</small>
+          </div>
           <div class="field"><label>هامش ربح اللوح (جنيه/واط)</label><input type="number" id="cfgOgPanelMarkup" step="0.01"></div>
-          <div class="field"><label>تكلفة الشاسيه/وحدة</label><input type="number" id="cfgOgSteelCost"></div>
         </div>
         <div class="row3">
+          <div class="field"><label>تكلفة الشاسيه/وحدة</label><input type="number" id="cfgOgSteelCost"></div>
           <div class="field"><label>هامش ربح الشاسيه/وحدة</label><input type="number" id="cfgOgSteelMargin"></div>
           <div class="field"><label>تكلفة متر الكابل</label><input type="number" id="cfgOgCableCost"></div>
-          <div class="field"><label>سعر متر الكابل للعميل</label><input type="number" id="cfgOgCableCustomer"></div>
         </div>
         <div class="row3">
+          <div class="field"><label>سعر متر الكابل للعميل</label><input type="number" id="cfgOgCableCustomer"></div>
           <div class="field"><label>أمتار كابل لكل شاسيه</label><input type="number" id="cfgOgCableMetersPerSteel"></div>
           <div class="field"><label>تكلفة الاكسسوارات (ثابت)</label><input type="number" id="cfgOgAccCost"></div>
+        </div>
+        <div class="row3">
           <div class="field"><label>سعر الاكسسوارات للعميل</label><input type="number" id="cfgOgAccCustomer"></div>
         </div>
         <div class="row3">
@@ -693,6 +722,10 @@
         </div>
         <div class="row3">
           <div class="field"><label>سعر التركيب للعميل/وحدة</label><input type="number" id="cfgOgInstallCustomer"></div>
+        </div>
+      </div>
+      </div>
+
         </div>
       </div>
 

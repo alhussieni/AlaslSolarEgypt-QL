@@ -80,8 +80,29 @@ function computeOffer(data, inputs) {
 
   const C4 = Number(inputs.requestedW) || 0; // Main!C4 Requested W
 
+  // ---- Main!H13,H14 : inverter sizing (لازم قبل تحديد H5 عشان نعرف حدود
+  //      الفولت الخاصة بالموديل بالظبط، لو متسجلة) ----
+  const H13 = Math.round(C4 / 1000) + (Number(inputs.increaseInverterHP) || 0);
+  const hpBucket = bucketPick(H13, data.inverter.hpBuckets);
+  const hpIdx = data.inverter.hpBuckets.indexOf(hpBucket);
+  const kwBucket = data.inverter.kwBuckets[hpIdx];
+  const H14 = { hp: hpBucket, kw: kwBucket, text: `${hpBucket} HP - ${kwBucket} KW` };
+  const invModel = findInverterModel(data, inputs.inverterBrand, H14.hp, H14.kw);
+
   // ---- Main!H5 : panels per string ----
-  const H5raw = Math.floor(data.voltageLimitCap / panel.vimp) - (Number(inputs.decreasePanelsPerString) || 0);
+  // لو الموديل المختار له بيانات فعلية من الداتا شيت (Voc الأقصى)، بنستخدمها
+  // بالظبط (وده الصح هندسيًا: الحد الأقصى بيتحسب على Voc مش Vimp، لأن Voc
+  // بيرتفع في الجو البارد وقت الصباح لما الألواح من غير حمل). لو الموديل
+  // لسه من غير بيانات مسجلة، بنرجع للحد العام الافتراضي (Vimp) زي الأول.
+  let stringVoltageLimit = data.voltageLimitCap;
+  let stringLimitBasis = 'vimp'; // للتوضيح في نتيجة الحساب
+  let panelDivisor = panel.vimp;
+  if (invModel && invModel.vocMax) {
+    stringVoltageLimit = invModel.vocMax;
+    stringLimitBasis = 'voc';
+    panelDivisor = panel.voc;
+  }
+  const H5raw = Math.floor(stringVoltageLimit / panelDivisor) - (Number(inputs.decreasePanelsPerString) || 0);
   const H5 = Math.max(H5raw, 1);
 
   // ---- Main!H6 : array count ----
@@ -98,15 +119,21 @@ function computeOffer(data, inputs) {
   // ---- Main!H9,H10,H11 : electrical totals ----
   const H9 = H6 * (panel.iimp || 0);   // total Iimp
   const H10 = H5 * (panel.vimp || 0);  // total Vimp (string voltage)
-  const H11 = H5 * (panel.voc || 0);   // total Voc
+  const H11 = H5 * (panel.voc || 0);   // total Voc (أهم رقم للتأكد من الأمان)
   const H12 = H10 * data.expectedVACFactor; // expected V-AC
 
-  // ---- Main!H13,H14 : inverter sizing ----
-  const H13 = Math.round(C4 / 1000) + (Number(inputs.increaseInverterHP) || 0);
-  const hpBucket = bucketPick(H13, data.inverter.hpBuckets);
-  const hpIdx = data.inverter.hpBuckets.indexOf(hpBucket);
-  const kwBucket = data.inverter.kwBuckets[hpIdx];
-  const H14 = { hp: hpBucket, kw: kwBucket, text: `${hpBucket} HP - ${kwBucket} KW` };
+  // ---- تحذير نطاق الـ MPPT: لو الموديل مسجل له نطاق MPPT وفولت التشغيل
+  //      الفعلي للسلسلة (H10) طلع بره النطاق ده، الانفرتر مش هيتابع أعلى
+  //      نقطة قدرة بكفاءة (حتى لو الفولت آمن من ناحية الأمان) ----
+  if (invModel && invModel.mpptMin && H10 < invModel.mpptMin) {
+    errors.push(`فولت التشغيل للسلسلة (${Math.round(H10)}V) أقل من الحد الأدنى لنطاق MPPT للانفرتر (${invModel.mpptMin}V) - كفاءة التتبع هتقل، فكّر تزود عدد الألواح بالسلسلة.`);
+  }
+  if (invModel && invModel.mpptMax && H10 > invModel.mpptMax) {
+    errors.push(`فولت التشغيل للسلسلة (${Math.round(H10)}V) أعلى من الحد الأقصى لنطاق MPPT للانفرتر (${invModel.mpptMax}V) - قلل عدد الألواح بالسلسلة.`);
+  }
+  if (!invModel || !invModel.vocMax) {
+    errors.push(`⚠ الموديل المختار مفيهوش بيانات Voc الأقصى مسجلة - اتحسب حد الفولت بمعادلة افتراضية عامة (${Math.round(stringVoltageLimit)}V÷Vimp)، مش من مواصفات الموديل الفعلية. سجّل بيانات الموديل من لوحة الأدمن للحصول على نتيجة أدق وأأمن.`);
+  }
 
   // ---- Main!H15 : reactor rating ----
   const H15 = bucketPick(H9, data.reactor.ampBuckets);
@@ -138,7 +165,6 @@ function computeOffer(data, inputs) {
   Calc.steelCost = steelUnitPrice * steelQty; // Calc!G6
 
   // 3) الانفرتر
-  const invModel = findInverterModel(data, inputs.inverterBrand, H14.hp, H14.kw);
   const invDiscount = getInverterDiscount(data, inputs.inverterBrand);
   let invListPrice = 0, invCostPrice = 0;
   if (invModel) {
@@ -287,6 +313,7 @@ function computeOffer(data, inputs) {
   return {
     errors,
     panel, H5, H6, H7, C5, H8, H9, H10, H11, H12, H13, H14, H15, H16, H17, cbBucket,
+    stringVoltageLimit, stringLimitBasis,
     invModel, invDiscount, combinerRow, combinerQty: Calc.combinerQty,
     Calc,
     offer,

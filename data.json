@@ -689,109 +689,163 @@
         "brand": "VEICHI",
         "kw": 4,
         "hp": 5.5,
-        "listPrice": 10300
+        "listPrice": 10300,
+        "vocMax": 900,
+        "mpptMin": 480,
+        "mpptMax": 560
       },
       {
         "brand": "VEICHI",
         "kw": 5.5,
         "hp": 7.5,
-        "listPrice": 11800
+        "listPrice": 11800,
+        "vocMax": 900,
+        "mpptMin": 480,
+        "mpptMax": 560
       },
       {
         "brand": "VEICHI",
         "kw": 7.5,
         "hp": 10,
-        "listPrice": 15000
+        "listPrice": 15000,
+        "vocMax": 900,
+        "mpptMin": 480,
+        "mpptMax": 560
       },
       {
         "brand": "VEICHI",
         "kw": 10,
         "hp": 15,
-        "listPrice": 19900
+        "listPrice": 19900,
+        "vocMax": 900,
+        "mpptMin": 480,
+        "mpptMax": 560
       },
       {
         "brand": "VEICHI",
         "kw": 15,
         "hp": 20,
-        "listPrice": 23800
+        "listPrice": 23800,
+        "vocMax": 900,
+        "mpptMin": 480,
+        "mpptMax": 560
       },
       {
         "brand": "VEICHI",
         "kw": 18.5,
         "hp": 25,
-        "listPrice": 30000
+        "listPrice": 30000,
+        "vocMax": 900,
+        "mpptMin": 480,
+        "mpptMax": 560
       },
       {
         "brand": "VEICHI",
         "kw": 22,
         "hp": 30,
-        "listPrice": 35500
+        "listPrice": 35500,
+        "vocMax": 900,
+        "mpptMin": 480,
+        "mpptMax": 560
       },
       {
         "brand": "VEICHI",
         "kw": 30,
         "hp": 40,
-        "listPrice": 48500
+        "listPrice": 48500,
+        "vocMax": 900,
+        "mpptMin": 480,
+        "mpptMax": 560
       },
       {
         "brand": "VEICHI",
         "kw": 37,
         "hp": 50,
-        "listPrice": 54500
+        "listPrice": 54500,
+        "vocMax": 900,
+        "mpptMin": 480,
+        "mpptMax": 560
       },
       {
         "brand": "VEICHI",
         "kw": 45,
         "hp": 60,
-        "listPrice": 74000
+        "listPrice": 74000,
+        "vocMax": 900,
+        "mpptMin": 480,
+        "mpptMax": 560
       },
       {
         "brand": "VEICHI",
         "kw": 55,
         "hp": 75,
-        "listPrice": 82300
+        "listPrice": 82300,
+        "vocMax": 900,
+        "mpptMin": 480,
+        "mpptMax": 560
       },
       {
         "brand": "VEICHI",
         "kw": 75,
         "hp": 100,
-        "listPrice": 102000
+        "listPrice": 102000,
+        "vocMax": 900,
+        "mpptMin": 480,
+        "mpptMax": 560
       },
       {
         "brand": "VEICHI",
         "kw": 90,
         "hp": 125,
-        "listPrice": 115000
+        "listPrice": 115000,
+        "vocMax": 900,
+        "mpptMin": 480,
+        "mpptMax": 560
       },
       {
         "brand": "VEICHI",
         "kw": 110,
         "hp": 150,
-        "listPrice": 138000
+        "listPrice": 138000,
+        "vocMax": 900,
+        "mpptMin": 480,
+        "mpptMax": 560
       },
       {
         "brand": "VEICHI",
         "kw": 132,
         "hp": 180,
-        "listPrice": 177000
+        "listPrice": 177000,
+        "vocMax": 900,
+        "mpptMin": 480,
+        "mpptMax": 560
       },
       {
         "brand": "VEICHI",
         "kw": 160,
         "hp": 225,
-        "listPrice": 198000
+        "listPrice": 198000,
+        "vocMax": 900,
+        "mpptMin": 480,
+        "mpptMax": 560
       },
       {
         "brand": "VEICHI",
         "kw": 185,
         "hp": 250,
-        "listPrice": 309000
+        "listPrice": 309000,
+        "vocMax": 900,
+        "mpptMin": 480,
+        "mpptMax": 560
       },
       {
         "brand": "VEICHI",
         "kw": 200,
         "hp": 275,
-        "listPrice": 340000
+        "listPrice": 340000,
+        "vocMax": 900,
+        "mpptMin": 480,
+        "mpptMax": 560
       },
       {
         "brand": "VEICHI",
@@ -821,397 +875,549 @@
         "brand": "Delixi",
         "kw": 4,
         "hp": 5.5,
-        "listPrice": 10600
+        "listPrice": 10600,
+        "vocMax": 800
       },
       {
         "brand": "Delixi",
         "kw": 5.5,
         "hp": 7.5,
-        "listPrice": 14000
+        "listPrice": 14000,
+        "vocMax": 800
       },
       {
         "brand": "Delixi",
         "kw": 7.5,
         "hp": 10,
-        "listPrice": 15200
+        "listPrice": 15200,
+        "vocMax": 800
       },
       {
         "brand": "Delixi",
         "kw": 10,
         "hp": 15,
-        "listPrice": 19700
+        "listPrice": 19700,
+        "vocMax": 800
       },
       {
         "brand": "Delixi",
         "kw": 15,
         "hp": 20,
-        "listPrice": 22600
+        "listPrice": 22600,
+        "vocMax": 800
       },
       {
         "brand": "Delixi",
         "kw": 18.5,
         "hp": 25,
-        "listPrice": 29400
+        "listPrice": 29400,
+        "vocMax": 800
       },
       {
         "brand": "Delixi",
         "kw": 22,
         "hp": 30,
-        "listPrice": 35600
+        "listPrice": 35600,
+        "vocMax": 800
       },
       {
         "brand": "Delixi",
         "kw": 30,
         "hp": 40,
-        "listPrice": 44400
+        "listPrice": 44400,
+        "vocMax": 800
       },
       {
         "brand": "Delixi",
         "kw": 37,
         "hp": 50,
-        "listPrice": 53200
+        "listPrice": 53200,
+        "vocMax": 800
       },
       {
         "brand": "Delixi",
         "kw": 45,
         "hp": 60,
-        "listPrice": 68400
+        "listPrice": 68400,
+        "vocMax": 800
       },
       {
         "brand": "Delixi",
         "kw": 55,
         "hp": 75,
-        "listPrice": 75700
+        "listPrice": 75700,
+        "vocMax": 800
       },
       {
         "brand": "Delixi",
         "kw": 75,
         "hp": 100,
-        "listPrice": 86300
+        "listPrice": 86300,
+        "vocMax": 800
       },
       {
         "brand": "Delixi",
         "kw": 90,
         "hp": 125,
-        "listPrice": 106200
+        "listPrice": 106200,
+        "vocMax": 800
       },
       {
         "brand": "Delixi",
         "kw": 110,
         "hp": 150,
-        "listPrice": 121600
+        "listPrice": 121600,
+        "vocMax": 800
       },
       {
         "brand": "Delixi",
         "kw": 132,
         "hp": 180,
-        "listPrice": 156200
+        "listPrice": 156200,
+        "vocMax": 800
       },
       {
         "brand": "SAJ",
         "kw": 2.2,
         "hp": 3,
-        "listPrice": 8000
+        "listPrice": 8000,
+        "vocMax": 900,
+        "mpptMin": 500,
+        "mpptMax": 750
       },
       {
         "brand": "SAJ",
         "kw": 4,
         "hp": 5.5,
-        "listPrice": 9300
+        "listPrice": 9300,
+        "vocMax": 900,
+        "mpptMin": 500,
+        "mpptMax": 750
       },
       {
         "brand": "SAJ",
         "kw": 5.5,
         "hp": 7.5,
-        "listPrice": 11200
+        "listPrice": 11200,
+        "vocMax": 900,
+        "mpptMin": 500,
+        "mpptMax": 750
       },
       {
         "brand": "SAJ",
         "kw": 7.5,
         "hp": 10,
-        "listPrice": 13800
+        "listPrice": 13800,
+        "vocMax": 900,
+        "mpptMin": 500,
+        "mpptMax": 750
       },
       {
         "brand": "SAJ",
         "kw": 11,
         "hp": 15,
-        "listPrice": 17400
+        "listPrice": 17400,
+        "vocMax": 900,
+        "mpptMin": 500,
+        "mpptMax": 750
       },
       {
         "brand": "SAJ",
         "kw": 15,
         "hp": 20,
-        "listPrice": 21200
+        "listPrice": 21200,
+        "vocMax": 900,
+        "mpptMin": 500,
+        "mpptMax": 750
       },
       {
         "brand": "SAJ",
         "kw": 18.5,
         "hp": 25,
-        "listPrice": 27900
+        "listPrice": 27900,
+        "vocMax": 900,
+        "mpptMin": 500,
+        "mpptMax": 750
       },
       {
         "brand": "SAJ",
         "kw": 22,
         "hp": 30,
-        "listPrice": 30900
+        "listPrice": 30900,
+        "vocMax": 900,
+        "mpptMin": 500,
+        "mpptMax": 750
       },
       {
         "brand": "SAJ",
         "kw": 30,
         "hp": 40,
-        "listPrice": 38900
+        "listPrice": 38900,
+        "vocMax": 900,
+        "mpptMin": 500,
+        "mpptMax": 750
       },
       {
         "brand": "SAJ",
         "kw": 37,
         "hp": 50,
-        "listPrice": 46400
+        "listPrice": 46400,
+        "vocMax": 900,
+        "mpptMin": 500,
+        "mpptMax": 750
       },
       {
         "brand": "SAJ",
         "kw": 45,
         "hp": 60,
-        "listPrice": 59900
+        "listPrice": 59900,
+        "vocMax": 900,
+        "mpptMin": 500,
+        "mpptMax": 750
       },
       {
         "brand": "SAJ",
         "kw": 55,
         "hp": 75,
-        "listPrice": 65000
+        "listPrice": 65000,
+        "vocMax": 900,
+        "mpptMin": 500,
+        "mpptMax": 750
       },
       {
         "brand": "SAJ",
         "kw": 75,
         "hp": 100,
-        "listPrice": 86000
+        "listPrice": 86000,
+        "vocMax": 900,
+        "mpptMin": 500,
+        "mpptMax": 750
       },
       {
         "brand": "SAJ",
         "kw": 93,
         "hp": 125,
-        "listPrice": 102000
+        "listPrice": 102000,
+        "vocMax": 900,
+        "mpptMin": 500,
+        "mpptMax": 750
       },
       {
         "brand": "SAJ",
         "kw": 110,
         "hp": 150,
-        "listPrice": 123000
+        "listPrice": 123000,
+        "vocMax": 900,
+        "mpptMin": 500,
+        "mpptMax": 750
       },
       {
         "brand": "SAJ",
         "kw": 132,
         "hp": 180,
-        "listPrice": 160000
+        "listPrice": 160000,
+        "vocMax": 900,
+        "mpptMin": 500,
+        "mpptMax": 750
       },
       {
         "brand": "SAJ",
         "kw": 160,
         "hp": 225,
-        "listPrice": 173000
+        "listPrice": 173000,
+        "vocMax": 900,
+        "mpptMin": 500,
+        "mpptMax": 750
       },
       {
         "brand": "SAJ",
         "kw": 200,
         "hp": 270,
-        "listPrice": 265000
+        "listPrice": 265000,
+        "vocMax": 900,
+        "mpptMin": 500,
+        "mpptMax": 750
       },
       {
         "brand": "SIS",
         "kw": 7.5,
         "hp": 10,
-        "listPrice": 14100
+        "listPrice": 14100,
+        "vocMax": 800
       },
       {
         "brand": "SIS",
         "kw": 10,
         "hp": 15,
-        "listPrice": 17700
+        "listPrice": 17700,
+        "vocMax": 800
       },
       {
         "brand": "SIS",
         "kw": 15,
         "hp": 20,
-        "listPrice": 21200
+        "listPrice": 21200,
+        "vocMax": 800
       },
       {
         "brand": "SIS",
         "kw": 22,
         "hp": 30,
-        "listPrice": 32400
+        "listPrice": 32400,
+        "vocMax": 800
       },
       {
         "brand": "SIS",
         "kw": 30,
         "hp": 40,
-        "listPrice": 42400
+        "listPrice": 42400,
+        "vocMax": 800
       },
       {
         "brand": "SIS",
         "kw": 37,
         "hp": 50,
-        "listPrice": 48300
+        "listPrice": 48300,
+        "vocMax": 800
       },
       {
         "brand": "SIS",
         "kw": 45,
         "hp": 60,
-        "listPrice": 61800
+        "listPrice": 61800,
+        "vocMax": 800
       },
       {
         "brand": "SIS",
         "kw": 55,
         "hp": 70,
-        "listPrice": 68300
+        "listPrice": 68300,
+        "vocMax": 800
       },
       {
         "brand": "FRACON",
         "kw": 4,
         "hp": 5.5,
-        "listPrice": 12000
+        "listPrice": 12000,
+        "vocMax": 800,
+        "mpptMin": 450,
+        "mpptMax": 600
       },
       {
         "brand": "FRACON",
         "kw": 5.5,
         "hp": 7.5,
-        "listPrice": 14000
+        "listPrice": 14000,
+        "vocMax": 800,
+        "mpptMin": 450,
+        "mpptMax": 600
       },
       {
         "brand": "FRACON",
         "kw": 7.5,
         "hp": 10,
-        "listPrice": 16000
+        "listPrice": 16000,
+        "vocMax": 800,
+        "mpptMin": 450,
+        "mpptMax": 600
       },
       {
         "brand": "FRACON",
         "kw": 11,
         "hp": 15,
-        "listPrice": 22000
+        "listPrice": 22000,
+        "vocMax": 800,
+        "mpptMin": 450,
+        "mpptMax": 600
       },
       {
         "brand": "FRACON",
         "kw": 15,
         "hp": 20,
-        "listPrice": 26500
+        "listPrice": 26500,
+        "vocMax": 800,
+        "mpptMin": 450,
+        "mpptMax": 600
       },
       {
         "brand": "FRACON",
         "kw": 18.5,
         "hp": 25,
-        "listPrice": 35000
+        "listPrice": 35000,
+        "vocMax": 800,
+        "mpptMin": 450,
+        "mpptMax": 600
       },
       {
         "brand": "FRACON",
         "kw": 22,
         "hp": 30,
-        "listPrice": 40000
+        "listPrice": 40000,
+        "vocMax": 800,
+        "mpptMin": 450,
+        "mpptMax": 600
       },
       {
         "brand": "FRACON",
         "kw": 30,
         "hp": 40,
-        "listPrice": 56000
+        "listPrice": 56000,
+        "vocMax": 800,
+        "mpptMin": 450,
+        "mpptMax": 600
       },
       {
         "brand": "FRACON",
         "kw": 37,
         "hp": 50,
-        "listPrice": 62000
+        "listPrice": 62000,
+        "vocMax": 800,
+        "mpptMin": 450,
+        "mpptMax": 600
       },
       {
         "brand": "FRACON",
         "kw": 45,
         "hp": 60,
-        "listPrice": 79000
+        "listPrice": 79000,
+        "vocMax": 800,
+        "mpptMin": 450,
+        "mpptMax": 600
       },
       {
         "brand": "FRACON",
         "kw": 55,
         "hp": 75,
-        "listPrice": 94000
+        "listPrice": 94000,
+        "vocMax": 800,
+        "mpptMin": 450,
+        "mpptMax": 600
       },
       {
         "brand": "FRACON",
         "kw": 75,
         "hp": 100,
-        "listPrice": 116000
+        "listPrice": 116000,
+        "vocMax": 800,
+        "mpptMin": 450,
+        "mpptMax": 600
       },
       {
         "brand": "FRACON",
         "kw": 90,
         "hp": 125,
-        "listPrice": 131000
+        "listPrice": 131000,
+        "vocMax": 800,
+        "mpptMin": 450,
+        "mpptMax": 600
       },
       {
         "brand": "FRACON",
         "kw": 110,
         "hp": 150,
-        "listPrice": 150000
+        "listPrice": 150000,
+        "vocMax": 800,
+        "mpptMin": 450,
+        "mpptMax": 600
       },
       {
         "brand": "FRACON",
         "kw": 132,
         "hp": 180,
-        "listPrice": 200000
+        "listPrice": 200000,
+        "vocMax": 800,
+        "mpptMin": 450,
+        "mpptMax": 600
       },
       {
         "brand": "FRACON",
         "kw": 160,
         "hp": 225,
-        "listPrice": 230000
+        "listPrice": 230000,
+        "vocMax": 800,
+        "mpptMin": 450,
+        "mpptMax": 600
       },
       {
         "brand": "FRACON",
         "kw": 185,
         "hp": 250,
-        "listPrice": 250000
+        "listPrice": 250000,
+        "vocMax": 800,
+        "mpptMin": 450,
+        "mpptMax": 600
       },
       {
         "brand": "FRACON",
         "kw": 200,
         "hp": 270,
-        "listPrice": 300000
+        "listPrice": 300000,
+        "vocMax": 800,
+        "mpptMin": 450,
+        "mpptMax": 600
       },
       {
         "brand": "FRACON",
         "kw": 220,
         "hp": 300,
-        "listPrice": 350000
+        "listPrice": 350000,
+        "vocMax": 800,
+        "mpptMin": 450,
+        "mpptMax": 600
       },
       {
         "brand": "FRACON",
         "kw": 250,
         "hp": 330,
-        "listPrice": 380000
+        "listPrice": 380000,
+        "vocMax": 800,
+        "mpptMin": 450,
+        "mpptMax": 600
       },
       {
         "brand": "FRACON",
         "kw": 280,
         "hp": 370,
-        "listPrice": 420000
+        "listPrice": 420000,
+        "vocMax": 800,
+        "mpptMin": 450,
+        "mpptMax": 600
       },
       {
         "brand": "FRACON",
         "kw": 315,
         "hp": 420,
-        "listPrice": 450000
+        "listPrice": 450000,
+        "vocMax": 800,
+        "mpptMin": 450,
+        "mpptMax": 600
       },
       {
         "brand": "FRACON",
         "kw": 355,
         "hp": 470,
-        "listPrice": 520000
+        "listPrice": 520000,
+        "vocMax": 800,
+        "mpptMin": 450,
+        "mpptMax": 600
       },
       {
         "brand": "FRACON",
         "kw": 400,
         "hp": 530,
-        "listPrice": 550000
+        "listPrice": 550000,
+        "vocMax": 800,
+        "mpptMin": 450,
+        "mpptMax": 600
       },
       {
         "brand": "FRACON",
         "kw": 450,
         "hp": 600,
-        "listPrice": 600000
+        "listPrice": 600000,
+        "vocMax": 800,
+        "mpptMin": 450,
+        "mpptMax": 600
       }
     ],
     "hpBuckets": [
@@ -1656,7 +1862,8 @@
         "voltage": 24,
         "powerKW": 4,
         "listPrice": 19758,
-        "discount": 0.1
+        "discount": 0.1,
+        "pvVocMax": 500
       },
       {
         "brand": "Must",
@@ -1664,7 +1871,8 @@
         "voltage": 48,
         "powerKW": 6,
         "listPrice": 26444,
-        "discount": 0.1
+        "discount": 0.1,
+        "pvVocMax": 500
       },
       {
         "brand": "Must",
@@ -1672,7 +1880,8 @@
         "voltage": 48,
         "powerKW": 6,
         "listPrice": 27944,
-        "discount": 0.1
+        "discount": 0.1,
+        "pvVocMax": 500
       },
       {
         "brand": "Must",
@@ -1680,7 +1889,8 @@
         "voltage": 48,
         "powerKW": 8,
         "listPrice": 37700,
-        "discount": 0.1
+        "discount": 0.1,
+        "pvVocMax": 500
       },
       {
         "brand": "Must",
@@ -1688,7 +1898,8 @@
         "voltage": 48,
         "powerKW": 10,
         "listPrice": 39999,
-        "discount": 0.1
+        "discount": 0.1,
+        "pvVocMax": 500
       },
       {
         "brand": "Must",
@@ -1696,7 +1907,8 @@
         "voltage": 48,
         "powerKW": 12,
         "listPrice": 45999,
-        "discount": 0.1
+        "discount": 0.1,
+        "pvVocMax": 500
       },
       {
         "brand": "Must",
@@ -1712,7 +1924,10 @@
         "voltage": 12,
         "powerKW": 1,
         "listPrice": 8150,
-        "discount": 0.12
+        "discount": 0.12,
+        "pvVocMax": 400,
+        "pvMpptMin": 30,
+        "pvMpptMax": 400
       },
       {
         "brand": "VEICHI",
@@ -1728,7 +1943,10 @@
         "voltage": 24,
         "powerKW": 3.2,
         "listPrice": 14080,
-        "discount": 0.12
+        "discount": 0.12,
+        "pvVocMax": 400,
+        "pvMpptMin": 30,
+        "pvMpptMax": 400
       },
       {
         "brand": "VEICHI",
@@ -1736,7 +1954,10 @@
         "voltage": 24,
         "powerKW": 3,
         "listPrice": 18700,
-        "discount": 0.12
+        "discount": 0.12,
+        "pvVocMax": 450,
+        "pvMpptMin": 120,
+        "pvMpptMax": 430
       },
       {
         "brand": "VEICHI",
@@ -1744,7 +1965,10 @@
         "voltage": 48,
         "powerKW": 5,
         "listPrice": 22900,
-        "discount": 0.12
+        "discount": 0.12,
+        "pvVocMax": 450,
+        "pvMpptMin": 120,
+        "pvMpptMax": 430
       },
       {
         "brand": "VEICHI",
@@ -2282,6 +2506,7 @@
         "nightHours": 0,
         "dayHours": 1
       }
-    ]
+    ],
+    "systemEfficiency": 0.78
   }
 }
