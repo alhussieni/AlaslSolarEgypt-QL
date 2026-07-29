@@ -766,6 +766,7 @@ function renderAdminForms() {
   document.getElementById('cfgOgChargeSunHours').value = DATA.offgrid.batteryChargeSunHours;
   document.getElementById('cfgOgSystemEfficiency').value = DATA.offgrid.systemEfficiency;
   document.getElementById('cfgOgPanelMarkup').value = DATA.offgrid.panelMarkupPerWatt;
+  document.getElementById('cfgOgDefaultSurgeCapacityPct').value = DATA.offgrid.defaultSurgeCapacityPct;
   document.getElementById('cfgOgSteelCost').value = DATA.offgrid.steelCostPerUnit;
   document.getElementById('cfgOgSteelMargin').value = DATA.offgrid.steelMarginPerUnit;
   document.getElementById('cfgOgCableCost').value = DATA.offgrid.cablesCostPerMeter;
@@ -818,11 +819,11 @@ function ogInvRow(m, i) {
   const tr = document.createElement('tr');
   const textFields = ['brand', 'type'];
   const numFields = ['voltage', 'powerKW', 'listPrice', 'discount'];
-  const pvFields = ['pvVocMax', 'pvMpptMin', 'pvMpptMax'];
+  const pvFields = ['pvVocMax', 'pvMpptMin', 'pvMpptMax', 'surgeCapacityPct'];
   tr.innerHTML =
     textFields.map(f => `<td><input type="text" value="${m[f] ?? ''}" data-oginv="${i}" data-field="${f}"></td>`).join('') +
     numFields.map(f => `<td><input type="number" step="${f === 'discount' ? '0.01' : '1'}" value="${m[f] ?? ''}" data-oginv="${i}" data-field="${f}"></td>`).join('') +
-    pvFields.map(f => `<td><input type="number" step="1" placeholder="-" value="${m[f] ?? ''}" data-oginv="${i}" data-field="${f}"></td>`).join('') +
+    pvFields.map(f => `<td><input type="number" step="${f === 'surgeCapacityPct' ? '0.1' : '1'}" placeholder="-" value="${m[f] ?? ''}" data-oginv="${i}" data-field="${f}"></td>`).join('') +
     `<td><button class="rm" data-rm-oginv="${i}">×</button></td>`;
   tr.querySelectorAll('input').forEach(inp => inp.addEventListener('input', () => {
     const isText = inp.dataset.field === 'brand' || inp.dataset.field === 'type';
@@ -855,11 +856,11 @@ function ogBattRow(b, i) {
 
 function ogLoadRow(l, i) {
   const tr = document.createElement('tr');
-  const fields = ['name', 'watt', 'runningFactor', 'nightHours', 'dayHours'];
+  const fields = ['name', 'watt', 'runningFactor', 'nightHours', 'dayHours', 'surgeFactor'];
   tr.innerHTML = fields.map(f => {
     const type = f === 'name' ? 'text' : 'number';
-    const step = f === 'runningFactor' ? '0.01' : '1';
-    return `<td><input type="${type}" ${type === 'number' ? `step="${step}"` : ''} value="${l[f] ?? ''}" data-ogload="${i}" data-field="${f}"></td>`;
+    const step = (f === 'runningFactor') ? '0.01' : (f === 'surgeFactor' ? '0.5' : '1');
+    return `<td><input type="${type}" ${type === 'number' ? `step="${step}"` : ''} value="${l[f] ?? (f === 'surgeFactor' ? 1 : '')}" data-ogload="${i}" data-field="${f}"></td>`;
   }).join('') + `<td><button class="rm" data-rm-ogload="${i}">×</button></td>`;
   tr.querySelectorAll('input').forEach(inp => inp.addEventListener('input', () => {
     const val = inp.dataset.field === 'name' ? inp.value : Number(inp.value);
@@ -1169,6 +1170,7 @@ document.getElementById('addOgInvBtn').addEventListener('click', () => {
       { id:'noiPvVocMax', label:'PV Voc الأقصى (اختياري)', type:'number', step:1 },
       { id:'noiPvMpptMin', label:'PV MPPT أدنى (اختياري)', type:'number', step:1 },
       { id:'noiPvMpptMax', label:'PV MPPT أقصى (اختياري)', type:'number', step:1 },
+      { id:'noiSurgeCap', label:'نسبة تحمّل تيار البدء (اختياري)', type:'number', step:0.1, placeholder:'مثال: 1.5 = 150%' },
     ],
     onConfirm: () => {
       const brand = gmVal('noiBrand'), type = gmVal('noiType'), voltage = gmNum('noiVoltage'),
@@ -1177,7 +1179,8 @@ document.getElementById('addOgInvBtn').addEventListener('click', () => {
       const pvVocMax = gmVal('noiPvVocMax') === '' ? null : gmNum('noiPvVocMax');
       const pvMpptMin = gmVal('noiPvMpptMin') === '' ? null : gmNum('noiPvMpptMin');
       const pvMpptMax = gmVal('noiPvMpptMax') === '' ? null : gmNum('noiPvMpptMax');
-      DATA.offgrid.inverters.push({ brand, type, voltage, powerKW, listPrice, discount, pvVocMax, pvMpptMin, pvMpptMax });
+      const surgeCapacityPct = gmVal('noiSurgeCap') === '' ? null : gmNum('noiSurgeCap');
+      DATA.offgrid.inverters.push({ brand, type, voltage, powerKW, listPrice, discount, pvVocMax, pvMpptMin, pvMpptMax, surgeCapacityPct });
       closeModal();
       renderAdminForms();
       populateOgSelectors();
@@ -1213,12 +1216,14 @@ document.getElementById('addOgBattBtn').addEventListener('click', () => {
 document.getElementById('addOgLoadBtn').addEventListener('click', () => {
   openModal({
     title: 'إضافة جهاز لقائمة الأحمال',
+    sub: 'معامل تيار البدء بيهم بس للأجهزة اللي فيها موتور/كومبريسور (موتورات، تكييفات، ثلاجات، مراوح) - سيبه 1 للإضاءة والإلكترونيات.',
     fields: [
       { id:'nolName', label:'اسم الجهاز *', type:'text', placeholder:'مثال: تكييف 2 حصان' },
       { id:'nolWatt', label:'القدرة (واط) *', type:'number', step:1 },
       { id:'nolRf', label:'معامل التشغيل', type:'number', step:0.01, placeholder:'افتراضي 1' },
       { id:'nolNight', label:'ساعات التشغيل ليلًا', type:'number', step:0.5 },
       { id:'nolDay', label:'ساعات التشغيل نهارًا', type:'number', step:0.5 },
+      { id:'nolSurge', label:'معامل تيار البدء', type:'number', step:0.5, placeholder:'افتراضي 1 (موتور/كومبريسور: 3-5)' },
     ],
     onConfirm: () => {
       const name = gmVal('nolName'), watt = gmNum('nolWatt');
@@ -1226,7 +1231,8 @@ document.getElementById('addOgLoadBtn').addEventListener('click', () => {
       const runningFactor = gmVal('nolRf') === '' ? 1 : Number(gmVal('nolRf'));
       const nightHours = gmNum('nolNight') || 0;
       const dayHours = gmNum('nolDay') || 0;
-      DATA.offgrid.loads.push({ name, watt, runningFactor, nightHours, dayHours });
+      const surgeFactor = gmVal('nolSurge') === '' ? 1 : Number(gmVal('nolSurge'));
+      DATA.offgrid.loads.push({ name, watt, runningFactor, nightHours, dayHours, surgeFactor });
       closeModal();
       renderAdminForms();
       populateOgSelectors();
@@ -1272,6 +1278,7 @@ function collectConstantsIntoData() {
   DATA.offgrid.batteryChargeSunHours = Number(document.getElementById('cfgOgChargeSunHours').value);
   DATA.offgrid.systemEfficiency = Number(document.getElementById('cfgOgSystemEfficiency').value);
   DATA.offgrid.panelMarkupPerWatt = Number(document.getElementById('cfgOgPanelMarkup').value);
+  DATA.offgrid.defaultSurgeCapacityPct = Number(document.getElementById('cfgOgDefaultSurgeCapacityPct').value);
   DATA.offgrid.steelCostPerUnit = Number(document.getElementById('cfgOgSteelCost').value);
   DATA.offgrid.steelMarginPerUnit = Number(document.getElementById('cfgOgSteelMargin').value);
   DATA.offgrid.cablesCostPerMeter = Number(document.getElementById('cfgOgCableCost').value);
@@ -1513,7 +1520,8 @@ function ogRecalc() {
     <div class="spec"><div class="k">سعة البطارية</div><div class="v">${r.batt.ah} AH</div></div>
     <div class="spec"><div class="k">بطاريات بالسلسلة</div><div class="v">${fmt(r.O7)}</div></div>
     <div class="spec"><div class="k">عدد السلاسل</div><div class="v">${fmt(r.O8)}</div></div>
-    <div class="spec"><div class="k">القدرة اللحظية القصوى</div><div class="v">${fmt(r.R2)} W</div></div>
+    <div class="spec"><div class="k">القدرة اللحظية (تشغيل مستقر)</div><div class="v">${fmt(r.R2)} W</div></div>
+    <div class="spec"><div class="k">القدرة اللحظية القصوى (شامل تيار البدء)</div><div class="v" style="color:${r.peakInstantaneousW > r.surgeCapacityW ? 'var(--danger)' : 'var(--ink)'};">${fmt(r.peakInstantaneousW)} W${r.worstSurgeLoad ? ` <small style="color:var(--ink-faint); font-weight:400;">(${r.worstSurgeLoad})</small>` : ''}</div></div>
     <div class="spec"><div class="k">الاحتياج اليومي</div><div class="v">${fmt(r.R5)} Wh</div></div>
     <div class="spec"><div class="k">إنتاج الألواح اليومي الفعلي</div><div class="v">${fmt(r.O3)} Wh <small style="color:var(--ink-faint); font-weight:400;">(بعد فاقد ${Math.round((1-r.systemEfficiency)*100)}%)</small></div></div>
     <div class="spec"><div class="k">القدرة المركبة</div><div class="v">${r.installedKW.toFixed(2)} KW</div></div>

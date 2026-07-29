@@ -3,7 +3,7 @@
     "companyName": "الأصل للطاقة الشمسية",
     "currency": "جنيه مصري",
     "currencySymbol": "ج.م",
-    "lastUpdated": "2026-07-28",
+    "lastUpdated": "2026-07-18",
     "adminUsername": "admin",
     "adminPasswordHash": "240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9",
     "quotesWorkerUrl": ""
@@ -1753,7 +1753,7 @@
   "offgrid": {
     "psh": 6,
     "safetyFactor": 1.1,
-    "extraPanels": 0,
+    "extraPanels": 2,
     "batteryChargeSunHours": 5.5,
     "panelMarkupPerWatt": 0.5,
     "steelCostPerUnit": 1200,
@@ -2315,198 +2315,227 @@
         "watt": 10,
         "runningFactor": 0.5,
         "nightHours": 19,
-        "dayHours": 5
+        "dayHours": 5,
+        "surgeFactor": 1
       },
       {
         "name": "DVR/ NVR",
         "watt": 25,
         "runningFactor": 1,
         "nightHours": 19,
-        "dayHours": 5
+        "dayHours": 5,
+        "surgeFactor": 1
       },
       {
         "name": "charger/router",
         "watt": 15,
         "runningFactor": 1,
         "nightHours": 19,
-        "dayHours": 5
+        "dayHours": 5,
+        "surgeFactor": 1
       },
       {
         "name": "Camera",
         "watt": 10,
         "runningFactor": 1,
         "nightHours": 19,
-        "dayHours": 5
+        "dayHours": 5,
+        "surgeFactor": 1
       },
       {
         "name": "Laptop",
         "watt": 65,
         "runningFactor": 1,
         "nightHours": 0,
-        "dayHours": 8
+        "dayHours": 8,
+        "surgeFactor": 1
       },
       {
         "name": "مروحة",
         "watt": 70,
         "runningFactor": 0.5,
         "nightHours": 6,
-        "dayHours": 4
+        "dayHours": 4,
+        "surgeFactor": 3
       },
       {
         "name": "شفاط مطبخ",
         "watt": 75,
         "runningFactor": 1,
         "nightHours": 0,
-        "dayHours": 2
+        "dayHours": 2,
+        "surgeFactor": 3
       },
       {
         "name": "تلفاز LCD-CCTV",
         "watt": 60,
         "runningFactor": 1,
         "nightHours": 19,
-        "dayHours": 5
+        "dayHours": 5,
+        "surgeFactor": 1
       },
       {
         "name": "تلفاز LCD",
         "watt": 80,
         "runningFactor": 1,
         "nightHours": 3,
-        "dayHours": 3
+        "dayHours": 3,
+        "surgeFactor": 1
       },
       {
         "name": "ثلاجة",
         "watt": 175,
         "runningFactor": 0.8,
         "nightHours": 18,
-        "dayHours": 6
+        "dayHours": 6,
+        "surgeFactor": 3
       },
       {
         "name": "كشاف",
         "watt": 200,
         "runningFactor": 1,
         "nightHours": 12,
-        "dayHours": 0
+        "dayHours": 0,
+        "surgeFactor": 1
       },
       {
         "name": "فريزر",
         "watt": 300,
         "runningFactor": 0.8,
         "nightHours": 18,
-        "dayHours": 6
+        "dayHours": 6,
+        "surgeFactor": 3
       },
       {
         "name": "موتور 1 حصان",
         "watt": 740,
         "runningFactor": 1,
         "nightHours": 2,
-        "dayHours": 0.25
+        "dayHours": 0.25,
+        "surgeFactor": 5
       },
       {
         "name": "موتور 1 حصان -220",
         "watt": 740,
         "runningFactor": 1,
         "nightHours": 7,
-        "dayHours": 5
+        "dayHours": 5,
+        "surgeFactor": 5
       },
       {
         "name": "microwave",
         "watt": 1000,
         "runningFactor": 1,
         "nightHours": 1,
-        "dayHours": 1
+        "dayHours": 1,
+        "surgeFactor": 1
       },
       {
         "name": "شفاط -عنبر دواجن",
         "watt": 1100,
         "runningFactor": 0.6,
         "nightHours": 14,
-        "dayHours": 10
+        "dayHours": 10,
+        "surgeFactor": 3
       },
       {
         "name": "موتور 1.5 حصان",
         "watt": 1100,
         "runningFactor": 1,
         "nightHours": 14,
-        "dayHours": 10
+        "dayHours": 10,
+        "surgeFactor": 5
       },
       {
         "name": "موتور غاطس",
         "watt": 1100,
         "runningFactor": 1,
         "nightHours": 0.5,
-        "dayHours": 2
+        "dayHours": 2,
+        "surgeFactor": 5
       },
       {
         "name": "AC 1.5HP",
         "watt": 1100,
         "runningFactor": 0.75,
         "nightHours": 8,
-        "dayHours": 8
+        "dayHours": 8,
+        "surgeFactor": 4
       },
       {
         "name": "هيتر",
         "watt": 9000,
         "runningFactor": 1,
         "nightHours": 0,
-        "dayHours": 2
+        "dayHours": 2,
+        "surgeFactor": 1
       },
       {
         "name": "غسالة",
         "watt": 1500,
         "runningFactor": 1,
         "nightHours": 0,
-        "dayHours": 2
+        "dayHours": 2,
+        "surgeFactor": 3
       },
       {
         "name": "AC 2.5 HP",
         "watt": 1800,
         "runningFactor": 0.5,
         "nightHours": 8,
-        "dayHours": 8
+        "dayHours": 8,
+        "surgeFactor": 4
       },
       {
         "name": "AC 3 HP",
         "watt": 2200,
         "runningFactor": 0.5,
         "nightHours": 8,
-        "dayHours": 8
+        "dayHours": 8,
+        "surgeFactor": 4
       },
       {
         "name": "Motor 5.5HP",
         "watt": 4000,
         "runningFactor": 1,
         "nightHours": 1,
-        "dayHours": 0
+        "dayHours": 0,
+        "surgeFactor": 5
       },
       {
         "name": "Switch POE",
         "watt": 120,
         "runningFactor": 0.5,
         "nightHours": 18,
-        "dayHours": 6
+        "dayHours": 6,
+        "surgeFactor": 1
       },
       {
         "name": "Nano M5",
         "watt": 8,
         "runningFactor": 1,
         "nightHours": 18,
-        "dayHours": 6
+        "dayHours": 6,
+        "surgeFactor": 1
       },
       {
         "name": "PRINTER LASER",
         "watt": 300,
         "runningFactor": 0.5,
         "nightHours": 0,
-        "dayHours": 2
+        "dayHours": 2,
+        "surgeFactor": 1
       },
       {
         "name": "CASH MACHINE",
         "watt": 80,
         "runningFactor": 0.5,
         "nightHours": 0,
-        "dayHours": 1
+        "dayHours": 1,
+        "surgeFactor": 1
       }
     ],
-    "systemEfficiency": 0.78
+    "systemEfficiency": 0.78,
+    "defaultSurgeCapacityPct": 1.5
   }
 }

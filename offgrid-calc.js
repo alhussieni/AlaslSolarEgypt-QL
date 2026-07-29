@@ -69,8 +69,9 @@ function computeOffgridOffer(data, inputs) {
      فترة النهار معرّفة من 8 صباحًا لـ 4 عصرًا (8 ساعات)، وباقي الـ24
      ساعة (16 ساعة) تعتبر فترة ليلية - الزائر بيدخل عدد الساعات لكل
      جهاز في الفترتين، ولو مش عارف بيسيب القيم الافتراضية */
-  let R2 = 0;   // اجمالي القدرة اللحظية Max Power (Data input!R2)
+  let R2 = 0;   // اجمالي القدرة اللحظية Max Power (Data input!R2) - في وضع التشغيل المستقر
   let sumNight = 0, sumDay = 0;
+  let peakSurgeAddOn = 0, worstSurgeLoad = null;
   const loadRows = (inputs.loads || []).map(l => {
     const count = Number(l.count) || 0;
     const H = (Number(l.watt) || 0) * count;                                   // القدرة الاجمالية للحمل
@@ -79,8 +80,17 @@ function computeOffgridOffer(data, inputs) {
     R2 += H;
     sumNight += I;
     sumDay += J;
+    // تيار البدء (Inrush/Starting Current): بنفترض أسوأ سيناريو واقعي - جهاز
+    // واحد بس من كل نوع بيبدأ تشغيله في نفس لحظة استقرار كل الأجهزة التانية
+    // (مش كل الموتورات بتبدأ مع بعض فعليًا)، فبنحسب "الزيادة" الإضافية
+    // اللي هيسببها بدء أكبر جهاز (بالفرق بين تيار البدء والتيار المستقر له)
+    if (count > 0 && l.surgeFactor && l.surgeFactor > 1) {
+      const surgeAddOn = (Number(l.watt) || 0) * (l.surgeFactor - 1);
+      if (surgeAddOn > peakSurgeAddOn) { peakSurgeAddOn = surgeAddOn; worstSurgeLoad = l.name; }
+    }
     return { ...l, count, H, I, J, K: I + J };
   });
+  const peakInstantaneousW = R2 + peakSurgeAddOn; // القدرة اللحظية القصوى شاملة تيار بدء أكبر جهاز
 
   const morningEnabled = !!inputs.morningEnabled;
   const nightEnabled = !!inputs.nightEnabled;
@@ -96,6 +106,16 @@ function computeOffgridOffer(data, inputs) {
   if (!inv) { errors.push(`مفيش موديلات انفرتر مسجلة لماركة "${inputs.invBrand}".`); return { errors }; }
   if (invUndersized) errors.push(`أكبر انفرتر متاح من ماركة ${inv.brand} (${inv.powerKW} KW) لسه أصغر من القدرة اللحظية المطلوبة (${requiredKW} KW) - قلل الأحمال أو جرّب ماركة تانية.`);
   const inverterVoltage = inv.voltage;
+
+  /* ---- تحقق من تيار البدء (Starting Current) مقابل قدرة التحمّل اللحظية
+     للانفرتر - لو مسجلة نسبة تحمّل حقيقية للموديل بنستخدمها، غير كده بنستخدم
+     افتراض عام متحفّظ (150%) وبننبّه إنه تقريبي */
+  const surgeCapacityPct = inv.surgeCapacityPct || og.defaultSurgeCapacityPct || 1;
+  const surgeCapacityW = inv.powerKW * 1000 * surgeCapacityPct;
+  if (peakSurgeAddOn > 0 && peakInstantaneousW > surgeCapacityW) {
+    const basis = inv.surgeCapacityPct ? 'من الداتا شيت' : 'افتراض عام تقريبي 150% - سجّل النسبة الحقيقية من الداتا شيت لدقة أعلى';
+    errors.push(`⚠ تيار بدء "${worstSurgeLoad}" ممكن يخلي القدرة اللحظية تعدّي ${Math.round(peakInstantaneousW)}W، وده أكبر من قدرة تحمّل الانفرتر اللحظية (${Math.round(surgeCapacityW)}W، ${basis}) - الموتور ممكن ميدورش أو الانفرتر يفصل. فكّر في انفرتر أكبر أو تشغيل الموتورات الكبيرة لوحدها.`);
+  }
 
   /* ---- 3) اختيار البطارية تلقائيًا حسب الماركة + جهد الانفرتر ---- */
   const batt = pickBatteryForBrand(data, inputs.battBrand, inverterVoltage);
@@ -204,7 +224,7 @@ function computeOffgridOffer(data, inputs) {
   return {
     errors,
     panel, inv, batt,
-    R2, R5, R6, R7,
+    R2, R5, R6, R7, peakInstantaneousW, peakSurgeAddOn, worstSurgeLoad, surgeCapacityW,
     O2, O3, O6, O7, O8, O9, O10,
     installedKW, storedKWh: O9 / 1000, systemEfficiency,
     panelsPerString, stringCount, stringVimp, pvLimitVerified,

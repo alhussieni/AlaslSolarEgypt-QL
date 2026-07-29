@@ -651,7 +651,7 @@
         <select id="ogInvBrandFilter" style="display:none;"></select>
         <div class="tbl-wrap">
           <table class="tbl-edit" id="ogInvTable">
-            <thead><tr><th>الماركة</th><th>النوع</th><th>الجهد V</th><th>القدرة KW</th><th>السعر (Price List)</th><th>نسبة الخصم</th><th>PV Voc أقصى</th><th>PV MPPT أدنى</th><th>PV MPPT أقصى</th><th></th></tr></thead>
+            <thead><tr><th>الماركة</th><th>النوع</th><th>الجهد V</th><th>القدرة KW</th><th>السعر (Price List)</th><th>نسبة الخصم</th><th>PV Voc أقصى</th><th>PV MPPT أدنى</th><th>PV MPPT أقصى</th><th>نسبة تحمّل تيار البدء</th><th></th></tr></thead>
             <tbody></tbody>
           </table>
         </div>
@@ -676,10 +676,10 @@
       <div class="admin-section" data-section="og-loads">
       <div class="card">
         <h2><span class="num">🔌</span> أوف جريد - قائمة الأحمال (الأجهزة)</h2>
-        <p style="font-size:12px; color:var(--ink-faint); margin-top:-8px;">دي القائمة اللي بتظهر للعميل يختار عدد كل جهاز عنده.</p>
+        <p style="font-size:12px; color:var(--ink-faint); margin-top:-8px;">دي القائمة اللي بتظهر للعميل يختار عدد كل جهاز عنده. "معامل تيار البدء" بيمثّل كام ضعف القدرة العادية بتسحبها الموتورات وقت التشغيل الأول (1 = بدون تيار بدء مؤثر، زي الإضاءة والإلكترونيات).</p>
         <div class="tbl-wrap">
           <table class="tbl-edit" id="ogLoadsTable">
-            <thead><tr><th>اسم الجهاز</th><th>القدرة (واط)</th><th>معامل التشغيل</th><th>ساعات ليلية</th><th>ساعات نهارية</th><th></th></tr></thead>
+            <thead><tr><th>اسم الجهاز</th><th>القدرة (واط)</th><th>معامل التشغيل</th><th>ساعات ليلية</th><th>ساعات نهارية</th><th>معامل تيار البدء</th><th></th></tr></thead>
             <tbody></tbody>
           </table>
         </div>
@@ -701,6 +701,13 @@
             <small style="display:block; margin-top:5px; font-size:11px; color:var(--ink-faint);">فاقد الحرارة/الأتربة/الكابلات/كفاءة الشاحن مجتمعين - افتراضي 0.78 (زي المعمول به في أدوات مشابهة).</small>
           </div>
           <div class="field"><label>هامش ربح اللوح (جنيه/واط)</label><input type="number" id="cfgOgPanelMarkup" step="0.01"></div>
+        </div>
+        <div class="row3">
+          <div class="field">
+            <label>نسبة تحمّل تيار البدء الافتراضية</label>
+            <input type="number" id="cfgOgDefaultSurgeCapacityPct" step="0.1" min="1">
+            <small style="display:block; margin-top:5px; font-size:11px; color:var(--ink-faint);">تُستخدم لأي انفرتر مسجّلش نسبته الحقيقية - افتراضي 1.5 (150%).</small>
+          </div>
         </div>
         <div class="row3">
           <div class="field"><label>تكلفة الشاسيه/وحدة</label><input type="number" id="cfgOgSteelCost"></div>
