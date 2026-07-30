@@ -149,14 +149,45 @@ function computeOffgridOffer(data, inputs) {
   const installedKWmin = (O2min * panelWatt) / 1000;
 
   /* ---- 5-ب) تصميم السلسلة (Series String) حسب حدود الانفرتر الفعلية للـ PV -----
-     ده بيتأكد إن العدد النهائي للألواح "قابل للتركيب فعليًا" (مضاعف كامل
-     لعدد ألواح السلسلة الواحدة)، ومحصور في نطاق MPPT الحقيقي للانفرتر -
-     مش مجرد رقم نظري من موازنة الطاقة بس */
+     مهم: مبنستخدمش أقصى عدد ألواح مسموح بيه في السلسلة دايمًا (ده كان بيسبب
+     إنتاج زيادة عن الحاجة أحيانًا بسبب التقريب لأعلى مضاعف كامل) - بندوّر
+     بدل من كده على أفضل تركيبة (عدد ألواح/سلسلة × عدد سلاسل) تحقق الحد
+     الأدنى المطلوب (O2min) بأقل عدد ألواح زيادة ممكن، وتفضّل كمان التوافق
+     مع نطاق MPPT لو ممكن */
   let panelsPerString = null, stringCount = null, stringVimp = null, pvLimitVerified = false;
   if (inv.pvVocMax && panel.voc) {
-    panelsPerString = Math.max(Math.floor(inv.pvVocMax / panel.voc), 1);
-    stringCount = Math.max(Math.ceil(O2min / panelsPerString), 1);
-    stringVimp = panelsPerString * panel.vimp;
+    const maxPanelsPerString = Math.max(Math.floor(inv.pvVocMax / panel.voc), 1);
+    // حد أدنى عملي: فولت السلسلة لازم يكون أعلى من جهد البطارية/الباص الداخلي
+    // بهامش معقول، وإلا شاحن الـMPPT مش هيقدر يشحن خالص (مش مجرد كفاءة أقل).
+    // لو الموديل مسجّل نطاق MPPT حقيقي بنستخدمه، غير كده بنفترض هامش 20%
+    // فوق جهد الانفرتر كحد أدنى تقريبي (مش رقم موثّق، مجرد احتياط هندسي)
+    const impliedMpptMin = inv.pvMpptMin || (inverterVoltage * 1.2);
+    const minPanelsPerString = Math.max(1, Math.ceil(impliedMpptMin / panel.vimp));
+    let best = null;
+    for (let pps = minPanelsPerString; pps <= maxPanelsPerString; pps++) {
+      const strings = Math.max(Math.ceil(O2min / pps), 1);
+      const total = pps * strings;
+      const vimpTotal = pps * panel.vimp;
+      const inMppt = !inv.pvMpptMax || vimpTotal <= inv.pvMpptMax;
+      const candidate = { panelsPerString: pps, stringCount: strings, total, inMppt };
+      if (!best
+        || candidate.total < best.total
+        || (candidate.total === best.total && candidate.inMppt && !best.inMppt)
+        || (candidate.total === best.total && candidate.inMppt === best.inMppt && candidate.panelsPerString > best.panelsPerString)
+      ) best = candidate;
+    }
+    if (!best) {
+      // مفيش تركيبة ممكنة أصلًا (حتى أقصى عدد ألواح مسموح بيه من ناحية الأمان
+      // لسه أقل من الحد الأدنى العملي للشحن) - الانفرتر/اللوح مش متوافقين
+      errors.push(`مفيش تركيبة سلسلة ممكنة بالانفرتر ${inv.brand} ${inv.type} مع اللوح ده - حد الأمان (${inv.pvVocMax}V) بيسمح بعدد ألواح أقل من الحد الأدنى اللازم للشحن. جرّب لوح بـ Voc أقل أو انفرتر تاني.`);
+      panelsPerString = maxPanelsPerString;
+      stringCount = Math.max(Math.ceil(O2min / panelsPerString), 1);
+      stringVimp = panelsPerString * panel.vimp;
+    } else {
+      panelsPerString = best.panelsPerString;
+      stringCount = best.stringCount;
+      stringVimp = panelsPerString * panel.vimp;
+    }
     pvLimitVerified = true;
     if (inv.pvMpptMin && stringVimp < inv.pvMpptMin) {
       errors.push(`فولت التشغيل لسلسلة الألواح (${Math.round(stringVimp)}V) أقل من الحد الأدنى لنطاق MPPT لانفرتر ${inv.brand} ${inv.type} (${inv.pvMpptMin}V) - كفاءة الشحن هتقل.`);
