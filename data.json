@@ -3,7 +3,7 @@
     "companyName": "الأصل للطاقة الشمسية",
     "currency": "جنيه مصري",
     "currencySymbol": "ج.م",
-    "lastUpdated": "2026-07-30",
+    "lastUpdated": "2026-07-18",
     "adminUsername": "admin",
     "adminPasswordHash": "240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9",
     "quotesWorkerUrl": ""
@@ -1753,7 +1753,7 @@
   "offgrid": {
     "psh": 6,
     "safetyFactor": 1.1,
-    "extraPanels": 0,
+    "extraPanels": 2,
     "batteryChargeSunHours": 5.5,
     "panelMarkupPerWatt": 0.5,
     "steelCostPerUnit": 1200,
@@ -1764,7 +1764,7 @@
     "accessoriesCostFixed": 2000,
     "accessoriesCustomerFixed": 2500,
     "transportCostFixed": 3000,
-    "transportCustomerFixed": 2500,
+    "transportCustomerFixed": 3500,
     "installCostPerUnit": 200,
     "installCustomerPerUnit": 500,
     "inverters": [

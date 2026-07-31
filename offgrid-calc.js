@@ -13,13 +13,21 @@ function roundUpTo(value, decimals) {
   return Math.ceil(value * f) / f;
 }
 
-/** يختار أصغر انفرتر من نفس الماركة تكفي قدرته لتغطية القدرة اللحظية المطلوبة */
-function pickInverterForBrand(data, brand, requiredKW) {
+/** يختار أصغر انفرتر من نفس الماركة تكفي قدرته لتغطية القدرة اللحظية المطلوبة
+ *  وكمان تيار البدء (Surge). لو مفيش موديل بيغطي الاتنين مع بعض، بيرجّع أكبر
+ *  موديل متاح ويوضّح أي شرط فيهم (المستقر أو تيار البدء) لسه ناقص */
+function pickInverterForBrand(data, brand, requiredKW, peakInstantaneousW, defaultSurgePct) {
   const options = data.offgrid.inverters.filter(m => m.brand === brand).sort((a, b) => a.powerKW - b.powerKW);
-  if (!options.length) return { model: null, undersized: false };
-  const fit = options.find(m => m.powerKW >= requiredKW);
-  if (fit) return { model: fit, undersized: false };
-  return { model: options[options.length - 1], undersized: true }; // أكبر موديل متاح، بس لسه أصغر من المطلوب
+  if (!options.length) return { model: null, undersized: false, surgeUndersized: false };
+  const surgeCapOf = m => m.powerKW * 1000 * (m.surgeCapacityPct || defaultSurgePct || 1);
+  const fit = options.find(m => m.powerKW >= requiredKW && peakInstantaneousW <= surgeCapOf(m));
+  if (fit) return { model: fit, undersized: false, surgeUndersized: false };
+  const largest = options[options.length - 1]; // أكبر موديل متاح، بس لسه مش كافي في شرط واحد على الأقل
+  return {
+    model: largest,
+    undersized: largest.powerKW < requiredKW,
+    surgeUndersized: peakInstantaneousW > surgeCapOf(largest),
+  };
 }
 
 /** يختار بطارية من نفس الماركة بنفس جهد الانفرتر (أو أقرب جهد أقل منه)،
@@ -59,6 +67,13 @@ function computeOffgridOffer(data, inputs) {
 
   const panel = findPanel(data, inputs.panelBrand, inputs.panelPower);
   if (!panel) { errors.push('اللوح المختار غير موجود في القائمة.'); return { errors }; }
+  // فحص إلزامي: من غير السعر، Number(null) بترجع 0 في JS، فيتحسب سعر اللوح
+  // = المارجن بس (panelMarkupPerWatt) من غير التكلفة الأصلية - ده كان بيسبب
+  // تسعير شبه مجاني لأي لوح سعره مش مسجّل (نفس الفحص موجود في calc.js أصلًا)
+  if (panel.price === null || panel.price === undefined || panel.price === '') {
+    errors.push(`اللوح المختار (${panel.brand} ${panel.power}W) مالوش سعر مسجّل - يرجى اختيار لوح تاني أو استكمال السعر من لوحة الأدمن قبل إصدار العرض.`);
+    return { errors };
+  }
   if (!inputs.invBrand) { errors.push('اختار ماركة الانفرتر.'); return { errors }; }
   if (!inputs.battBrand) { errors.push('اختار ماركة البطارية.'); return { errors }; }
 
@@ -75,8 +90,14 @@ function computeOffgridOffer(data, inputs) {
   const loadRows = (inputs.loads || []).map(l => {
     const count = Number(l.count) || 0;
     const H = (Number(l.watt) || 0) * count;                                   // القدرة الاجمالية للحمل
-    const I = (Number(l.nightHours) || 0) * H * (Number(l.runningFactor) || 1); // المجموع الليلي Wh
-    const J = (Number(l.dayHours) || 0) * H * (Number(l.runningFactor) || 1);   // المجموع النهاري Wh
+    // ملحوظة: مينفعش نستخدم (Number(l.runningFactor) || 1) لأن الصفر قيمة
+    // falsy في JS، فلو حد سجّل runningFactor=0 فعلاً (يعني الجهاز ده منسبتش
+    // فيه اصلا) هيتحول غلط لـ1 (100%). بنفرّق هنا بين "القيمة مش موجودة"
+    // و"القيمة = صفر فعليًا"
+    const runningFactor = (l.runningFactor === undefined || l.runningFactor === null || l.runningFactor === '')
+      ? 1 : Number(l.runningFactor);
+    const I = (Number(l.nightHours) || 0) * H * runningFactor; // المجموع الليلي Wh
+    const J = (Number(l.dayHours) || 0) * H * runningFactor;   // المجموع النهاري Wh
     R2 += H;
     sumNight += I;
     sumDay += J;
@@ -100,21 +121,26 @@ function computeOffgridOffer(data, inputs) {
   const R5 = R3 + R4;                              // اجمالي قدرة المطلوبة لليوم WH
   const R6 = psh ? R5 / psh : 0;                    // NEED POWER TO BE INSTALLED W
 
-  /* ---- 2) اختيار الانفرتر تلقائيًا حسب الماركة + القدرة اللحظية المطلوبة ---- */
+  /* ---- 2) اختيار الانفرتر تلقائيًا حسب الماركة + القدرة اللحظية المطلوبة
+     وتيار البدء مع بعض في نفس خطوة الترشيح (مش بعدها) ---- */
   const requiredKW = roundUpTo(R2 / 1000, 1);
-  const { model: inv, undersized: invUndersized } = pickInverterForBrand(data, inputs.invBrand, requiredKW);
+  const surgePctDefault = og.defaultSurgeCapacityPct || 1;
+  const { model: inv, undersized: invUndersized, surgeUndersized } =
+    pickInverterForBrand(data, inputs.invBrand, requiredKW, peakInstantaneousW, surgePctDefault);
   if (!inv) { errors.push(`مفيش موديلات انفرتر مسجلة لماركة "${inputs.invBrand}".`); return { errors }; }
   if (invUndersized) errors.push(`أكبر انفرتر متاح من ماركة ${inv.brand} (${inv.powerKW} KW) لسه أصغر من القدرة اللحظية المطلوبة (${requiredKW} KW) - قلل الأحمال أو جرّب ماركة تانية.`);
   const inverterVoltage = inv.voltage;
 
   /* ---- تحقق من تيار البدء (Starting Current) مقابل قدرة التحمّل اللحظية
-     للانفرتر - لو مسجلة نسبة تحمّل حقيقية للموديل بنستخدمها، غير كده بنستخدم
-     افتراض عام متحفّظ (150%) وبننبّه إنه تقريبي */
-  const surgeCapacityPct = inv.surgeCapacityPct || og.defaultSurgeCapacityPct || 1;
+     للانفرتر المُختار - لو مسجلة نسبة تحمّل حقيقية للموديل بنستخدمها، غير
+     كده بنستخدم افتراض عام متحفّظ (150%) وبننبّه إنه تقريبي. الترشيح فوق
+     أصلًا حاول ياخد موديل أكبر يغطي الشرط ده، فالتحذير هنا بيظهر بس لو حتى
+     أكبر موديل متاح من الماركة لسه مش كافي */
+  const surgeCapacityPct = inv.surgeCapacityPct || surgePctDefault;
   const surgeCapacityW = inv.powerKW * 1000 * surgeCapacityPct;
-  if (peakSurgeAddOn > 0 && peakInstantaneousW > surgeCapacityW) {
+  if (surgeUndersized && peakSurgeAddOn > 0) {
     const basis = inv.surgeCapacityPct ? 'من الداتا شيت' : 'افتراض عام تقريبي 150% - سجّل النسبة الحقيقية من الداتا شيت لدقة أعلى';
-    errors.push(`⚠ تيار بدء "${worstSurgeLoad}" ممكن يخلي القدرة اللحظية تعدّي ${Math.round(peakInstantaneousW)}W، وده أكبر من قدرة تحمّل الانفرتر اللحظية (${Math.round(surgeCapacityW)}W، ${basis}) - الموتور ممكن ميدورش أو الانفرتر يفصل. فكّر في انفرتر أكبر أو تشغيل الموتورات الكبيرة لوحدها.`);
+    errors.push(`⚠ أكبر انفرتر متاح من ماركة ${inv.brand} (${inv.powerKW} KW) لسه مش هيتحمّل تيار بدء "${worstSurgeLoad}" (القدرة اللحظية المطلوبة ${Math.round(peakInstantaneousW)}W مقابل قدرة تحمّل الانفرتر ${Math.round(surgeCapacityW)}W، ${basis}) - جرّب ماركة تانية أو شغّل الموتورات الكبيرة لوحدها منفصلة.`);
   }
 
   /* ---- 3) اختيار البطارية تلقائيًا حسب الماركة + جهد الانفرتر ---- */
@@ -131,6 +157,14 @@ function computeOffgridOffer(data, inputs) {
   const O6 = Math.round(O7 * O8);                  // اجمالي عدد البطاريات
   const O9 = O7 * O8 * batt.ah * batteryVoltage;    // اجمالي القدرة المخزنة WH
   const O10 = I10 ? (O9 - I10) / I10 : null;        // هامش أمان التخزين (اختياري/عرض فقط)
+  // تنبيه: حجم البطاريات هنا مبني على الحمل الليلي بس (R4). لو الزائر عطّل
+  // فترة الليل (nightEnabled=false) هتطلع السعة المطلوبة صفر، يعني نظام
+  // "أوف جريد" من غير أي مخزون طاقة إطلاقًا - من غير هامش لتغطية يوم غيم أو
+  // تذبذب الشمس. ده قرار تصميم محتاج مراجعة/تأكيد صاحب النظام، مش خطأ برمجي،
+  // فبنكتفي هنا بتنبيه صريح للمستخدم بدل ما نغيّر المنطق من غير تفويض
+  if (!nightEnabled || O8 <= 0) {
+    errors.push('⚠ سعة البطاريات المحسوبة = صفر أو شبه معدومة (لأن فترة الليل معطّلة أو الحمل الليلي صفر) - النظام هيشتغل بدون أي مخزون طاقة حقيقي، وده يعني مفيش تغطية ليوم غيم أو انقطاع الشمس المؤقت. راجع الاحتياج الفعلي قبل التسليم.');
+  }
 
   /* ---- 5) تصميم مصفوفة الألواح ----
      ملحوظة هندسية: بنضيف "كفاءة النظام الفعلية" (حرارة/أتربة/كابلات/كفاءة
