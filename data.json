@@ -2536,6 +2536,7 @@
       }
     ],
     "systemEfficiency": 0.78,
-    "defaultSurgeCapacityPct": 1.5
+    "defaultSurgeCapacityPct": 1.5,
+    "defaultAutonomyDays": 0
   }
 }

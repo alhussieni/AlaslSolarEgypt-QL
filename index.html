@@ -269,6 +269,13 @@
             <div class="field"><label>ساعات الشمس القصوى (PSH)</label><input type="number" id="ogPsh" step="0.1"></div>
             <div class="field"><label>هامش أمان</label><input type="number" id="ogSafetyFactor" step="0.01"></div>
           </div>
+          <div class="row2">
+            <div class="field">
+              <label>عدد أيام الاستقلالية المطلوبة</label>
+              <input type="number" id="ogAutonomyDays" step="0.5" min="0">
+              <small style="display:block; margin-top:5px; font-size:11px; color:var(--ink-faint);">صفر = تغطية ليلة واحدة بس. كل يوم إضافي بيخلي البطارية تقدر تشغّل يوم كامل (نهار+ليل) زيادة من غير شمس - وده بيزوّد عدد البطاريات والألواح والسعر تبعًا لذلك.</small>
+            </div>
+          </div>
           <div class="switch-row">
             <div class="lbl">تشغيل نهارًا (مباشر على الألواح)</div>
             <label class="switch"><input type="checkbox" id="ogMorningEnabled" checked><span class="track"></span><span class="thumb"></span></label>
@@ -712,6 +719,11 @@
             <label>نسبة تحمّل تيار البدء الافتراضية</label>
             <input type="number" id="cfgOgDefaultSurgeCapacityPct" step="0.1" min="1">
             <small style="display:block; margin-top:5px; font-size:11px; color:var(--ink-faint);">تُستخدم لأي انفرتر مسجّلش نسبته الحقيقية - افتراضي 1.5 (150%).</small>
+          </div>
+          <div class="field">
+            <label>أيام الاستقلالية الافتراضية</label>
+            <input type="number" id="cfgOgDefaultAutonomyDays" step="0.5" min="0">
+            <small style="display:block; margin-top:5px; font-size:11px; color:var(--ink-faint);">صفر = البطارية بتغطي ليلة واحدة بس (زي الوضع الحالي). كل يوم إضافي بيضيف يوم كامل (نهار+ليل) فوق كده من غير أي شمس.</small>
           </div>
         </div>
         <div class="row3">

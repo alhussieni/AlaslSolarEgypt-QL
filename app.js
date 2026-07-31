@@ -767,6 +767,7 @@ function renderAdminForms() {
   document.getElementById('cfgOgSystemEfficiency').value = DATA.offgrid.systemEfficiency;
   document.getElementById('cfgOgPanelMarkup').value = DATA.offgrid.panelMarkupPerWatt;
   document.getElementById('cfgOgDefaultSurgeCapacityPct').value = DATA.offgrid.defaultSurgeCapacityPct;
+  document.getElementById('cfgOgDefaultAutonomyDays').value = DATA.offgrid.defaultAutonomyDays;
   document.getElementById('cfgOgSteelCost').value = DATA.offgrid.steelCostPerUnit;
   document.getElementById('cfgOgSteelMargin').value = DATA.offgrid.steelMarginPerUnit;
   document.getElementById('cfgOgCableCost').value = DATA.offgrid.cablesCostPerMeter;
@@ -1279,6 +1280,7 @@ function collectConstantsIntoData() {
   DATA.offgrid.systemEfficiency = Number(document.getElementById('cfgOgSystemEfficiency').value);
   DATA.offgrid.panelMarkupPerWatt = Number(document.getElementById('cfgOgPanelMarkup').value);
   DATA.offgrid.defaultSurgeCapacityPct = Number(document.getElementById('cfgOgDefaultSurgeCapacityPct').value);
+  DATA.offgrid.defaultAutonomyDays = Number(document.getElementById('cfgOgDefaultAutonomyDays').value);
   DATA.offgrid.steelCostPerUnit = Number(document.getElementById('cfgOgSteelCost').value);
   DATA.offgrid.steelMarginPerUnit = Number(document.getElementById('cfgOgSteelMargin').value);
   DATA.offgrid.cablesCostPerMeter = Number(document.getElementById('cfgOgCableCost').value);
@@ -1371,6 +1373,7 @@ function populateOgSelectors() {
 
   document.getElementById('ogPsh').value = DATA.offgrid.psh;
   document.getElementById('ogSafetyFactor').value = DATA.offgrid.safetyFactor;
+  document.getElementById('ogAutonomyDays').value = DATA.offgrid.defaultAutonomyDays;
 
   document.getElementById('ogLoadPicker').innerHTML =
     DATA.offgrid.loads.map((l, i) => `<option value="${i}">${l.name} (${l.watt}W)</option>`).join('') +
@@ -1456,6 +1459,7 @@ function readOgInputs() {
     phase: document.getElementById('ogPhase').value,
     psh: Number(document.getElementById('ogPsh').value),
     safetyFactor: Number(document.getElementById('ogSafetyFactor').value),
+    autonomyDays: Number(document.getElementById('ogAutonomyDays').value),
     morningEnabled: document.getElementById('ogMorningEnabled').checked,
     nightEnabled: document.getElementById('ogNightEnabled').checked,
     manualPanelAdj: document.getElementById('ogManualPanelAdj').value,
@@ -1468,7 +1472,7 @@ function readOgInputs() {
 
 function bindOgInputs() {
   const ids = ['ogClientName','ogClientPhone','ogPhase','ogPanelBrand','ogPanelPower','ogInvBrand','ogBattBrand',
-    'ogPsh','ogSafetyFactor','ogMorningEnabled','ogNightEnabled','ogManualPanelAdj','ogExtraBatteryStrings',
+    'ogPsh','ogSafetyFactor','ogAutonomyDays','ogMorningEnabled','ogNightEnabled','ogManualPanelAdj','ogExtraBatteryStrings',
     'ogInstallQtyOverride','ogExtraDiscount'];
   ids.forEach(id => {
     const el = document.getElementById(id);
@@ -1509,7 +1513,7 @@ function buildOgEnergyProfileHTML(r) {
   const covered = production >= demand;
   const barPct = Math.min(100, coveragePct);
 
-  const autonomyDays = demand ? (r.storedKWh * 1000 / demand) : 0;
+  const autonomyDaysActual = demand ? (r.storedKWh * 1000 / demand) : 0;
 
   return `
     <div class="og-energy-profile">
@@ -1531,8 +1535,9 @@ function buildOgEnergyProfileHTML(r) {
       <div class="line final"><span>${covered ? '✓ المحطة بتغطي احتياج العميل بالكامل' : '⚠ المحطة مش مغطية كل الاحتياج'}</span><span style="color:${covered ? 'var(--leaf)' : 'var(--danger)'};">${coveragePct}%</span></div>
 
       <h3 style="margin:16px 0 8px; font-size:var(--fs-section);">الطاقة المخزنة والاستقلالية عن الشمس</h3>
+      <div class="line"><span>أيام الاستقلالية المطلوبة (بعد ليلة التشغيل الأساسية)</span><span>${(r.autonomyDays || 0).toFixed(1)} يوم</span></div>
       <div class="line"><span>إجمالي السعة المخزنة</span><span>${r.storedKWh.toFixed(1)} KWh</span></div>
-      <div class="line final"><span>عدد أيام الاستقلالية التقريبي (من غير شمس)</span><span>${autonomyDays.toFixed(1)} يوم</span></div>
+      <div class="line final"><span>عدد أيام الاستقلالية الفعلي المتحقق (من غير شمس)</span><span>${autonomyDaysActual.toFixed(1)} يوم</span></div>
     </div>
   `;
 }

@@ -79,6 +79,12 @@ function computeOffgridOffer(data, inputs) {
 
   const psh = Number(inputs.psh) || og.psh;
   const safetyFactor = Number(inputs.safetyFactor) || og.safetyFactor;
+  // احترنا هنا بمشكلة falsy-zero اللي أصلحناها قبل كده في runningFactor: صفر
+  // قيمة صحيحة ومقصودة لأيام الاستقلالية (يعني "ليلة واحدة بس")، فمينفعش
+  // نستخدم (Number(inputs.autonomyDays) || og.defaultAutonomyDays) لأن
+  // الصفر falsy وهيترجع للافتراضي غلط
+  const autonomyDays = (inputs.autonomyDays === undefined || inputs.autonomyDays === null || inputs.autonomyDays === '')
+    ? (og.defaultAutonomyDays || 0) : Number(inputs.autonomyDays);
 
   /* ---- 1) حمل الأحمال: لكل بند "الاحمال" في الجدول ----
      فترة النهار معرّفة من 8 صباحًا لـ 4 عصرًا (8 ساعات)، وباقي الـ24
@@ -149,24 +155,33 @@ function computeOffgridOffer(data, inputs) {
   const batteryVoltage = batt.voltage;
   const designOkay = inverterVoltage >= batteryVoltage;
 
-  /* ---- 4) تصميم بنك البطاريات ---- */
-  const R7 = (batt.dod && inverterVoltage) ? (R4 * safetyFactor) / (batt.dod * inverterVoltage) : 0; // BATTERY CAPACITY FOR DAY AH
+  /* ---- 4) تصميم بنك البطاريات ----
+     منطق أيام الاستقلالية (autonomyDays): البطارية أول حاجة لازم تغطي ليلة
+     التشغيل العادية (R4) - ده بيحصل دايمًا بغض النظر عن الاستقلالية. بعد كده
+     كل يوم استقلالية إضافي معناه يوم كامل (نهار+ليل = R5) تشغيل من غير أي
+     مساهمة من الشمس نهائي (يوم غيم كامل)، فبيتضاف R5 كامل عن كل يوم زيادة.
+     autonomyDays=0 يبقى بالظبط نفس المعادلة القديمة (R4 بس) من غير أي تغيير
+     في السلوك الافتراضي أو أسعار العروض الحالية */
+  const autonomyEnergyWh = R4 + (autonomyDays * R5);
+  const R7 = (batt.dod && inverterVoltage) ? (autonomyEnergyWh * safetyFactor) / (batt.dod * inverterVoltage) : 0; // BATTERY CAPACITY FOR DAY AH
   const O7 = designOkay ? inverterVoltage / batteryVoltage : 0;  // عدد البطاريات في الاسترينج
   const extraStrings = Number(inputs.extraBatteryStrings) || 0;
   const O8 = batt.ah ? Math.ceil(R7 / batt.ah) + extraStrings : extraStrings; // عدد الاسترينجات
   const O6 = Math.round(O7 * O8);                  // اجمالي عدد البطاريات
   const O9 = O7 * O8 * batt.ah * batteryVoltage;    // اجمالي القدرة المخزنة WH
   const O10 = I10 ? (O9 - I10) / I10 : null;        // هامش أمان التخزين (اختياري/عرض فقط)
-  // تنبيه: حجم البطاريات هنا مبني على الحمل الليلي بس (R4). لو R4=0 هتطلع
-  // السعة المطلوبة صفر، يعني نظام "أوف جريد" من غير أي مخزون طاقة إطلاقًا -
+  // تنبيه: لو الطاقة الكلية المطلوبة للبطارية (ليلة التشغيل + أيام الاستقلالية
+  // لو موجودة) طلعت صفر، يبقى النظام هيشتغل من غير أي مخزون طاقة إطلاقًا -
   // من غير هامش لتغطية يوم غيم أو تذبذب الشمس. ده قرار تصميم محتاج مراجعة/
   // تأكيد صاحب النظام، مش خطأ برمجي، فبنكتفي هنا بتنبيه صريح بدل ما نغيّر
   // المنطق من غير تفويض - لكن لازم نوضح السبب الحقيقي بدقة: تعطيل الليل
-  // فعليًا حاجة، وعدم وجود أي حمل ليلي مسجل مع إن الليل مفعّل حاجة تانية
-  if (R4 <= 0) {
+  // فعليًا حاجة، وعدم وجود أي حمل ليلي مسجل مع إن الليل مفعّل حاجة تانية.
+  // ملحوظة: لو أيام الاستقلالية > 0 والحمل الكلي (R5) موجود، مش هيظهر
+  // التحذير ده حتى لو R4=0، لأن أيام الاستقلالية بقت بديل كافي عن الليلة
+  if (autonomyEnergyWh <= 0) {
     const reason = !nightEnabled
-      ? 'لأنك عطّلت فترة الليل'
-      : 'لأن مفيش أي جهاز متسجل بساعات تشغيل ليلية (رغم إن فترة الليل مفعّلة)';
+      ? 'لأنك عطّلت فترة الليل ومفيش أيام استقلالية مسجلة (أو الحمل كله صفر)'
+      : 'لأن مفيش أي جهاز متسجل بساعات تشغيل ليلية، ومفيش أيام استقلالية مسجلة (رغم إن فترة الليل مفعّلة)';
     errors.push(`⚠ سعة البطاريات المحسوبة = صفر أو شبه معدومة ${reason} - النظام هيشتغل بدون أي مخزون طاقة حقيقي، وده يعني مفيش تغطية ليوم غيم أو انقطاع الشمس المؤقت. راجع الاحتياج الفعلي قبل التسليم.`);
   }
 
@@ -294,7 +309,7 @@ function computeOffgridOffer(data, inputs) {
     errors,
     panel, inv, batt,
     R2, R3, R4, R5, R6, R7, peakInstantaneousW, peakSurgeAddOn, worstSurgeLoad, surgeCapacityW,
-    morningEnabled, nightEnabled,
+    morningEnabled, nightEnabled, autonomyDays,
     O2, O3, O6, O7, O8, O9, O10,
     installedKW, storedKWh: O9 / 1000, systemEfficiency,
     panelsPerString, stringCount, stringVimp, pvLimitVerified,
