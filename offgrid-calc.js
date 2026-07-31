@@ -189,11 +189,25 @@ function computeOffgridOffer(data, inputs) {
      ملحوظة هندسية: بنضيف "كفاءة النظام الفعلية" (حرارة/أتربة/كابلات/كفاءة
      تحويل الشاحن) - في الإكسل الأصلي معامل الأمان (10%) كان بيغطي جزء بسيط
      من الفاقد الحقيقي، لكن الفاقد الفعلي في المناخ الحار عادة أعلى من كده
-     (نفس المنطق المستخدم في أدوات مشابهة زي حاسبة SuRa اللي بتستخدم ~78%) */
+     (نفس المنطق المستخدم في أدوات مشابهة زي حاسبة SuRa اللي بتستخدم ~78%)
+
+     منطق تحجيم الألواح (فيزيائيًا): بالنهار الألواح بتغذي الحمل النهاري
+     مباشرة وفي نفس الوقت بتشحن البطارية اللي هتغطي الحمل الليلي بعد كده -
+     يعني إجمالي إنتاج الألواح المطلوب يوميًا = الحمل النهاري + الحمل الليلي
+     (R5 كامل)، وده بالظبط اللي byDailyLoad بيحسبه بالفعل عن طريق R6=R5/psh.
+
+     byBattery هنا معناها حاجة مختلفة: التأكد إن الألواح تقدر تعيد شحن اللي
+     اتسحب من البطارية بالليل (R4) خصوصًا في نافذة الشحن الأضيق
+     (chargeSunHours) - مش إعادة شحن بنك البطارية بالكامل (O9)، لأن O9
+     بقت تشمل كمان رصيد أيام الاستقلالية الاحتياطي اللي المفروض يقعد ساكن
+     ومايتشحنش من جديد كل يوم شمس عادي. استخدام O9 هنا كان بيضخّم عدد
+     الألواح بشكل غير منطقي في الأنظمة الصغيرة (زي كاميرات المراقبة) اللي
+     أصغر بطارية متاحة فيها أكبر بكتير من الاستهلاك الفعلي، وكمان كان
+     هيتفاقم أكتر مع أي زيادة في أيام الاستقلالية */
   const panelWatt = Number(panel.power);
   const chargeSunHours = Number(og.batteryChargeSunHours);
   const systemEfficiency = Number(og.systemEfficiency) || 1;
-  const byBattery = panelWatt ? Math.ceil(O9 / (chargeSunHours * panelWatt * systemEfficiency)) : 0;
+  const byBattery = panelWatt ? Math.ceil((R4 * safetyFactor) / (chargeSunHours * panelWatt * systemEfficiency)) : 0;
   const byDailyLoad = panelWatt ? Math.round((R6 / panelWatt) * safetyFactor / systemEfficiency) : 0;
   const manualPanelAdj = Number(inputs.manualPanelAdj) || 0;
   const extraPanels = inputs.extraPanelsOverride !== undefined && inputs.extraPanelsOverride !== ''
