@@ -1483,6 +1483,60 @@ function bindOgInputs() {
 
 let LAST_OG_RESULT = null;
 
+/** يبني HTML ملخص الأداء الطاقي (ملف الأحمال بالتفصيل + مقارنة الإنتاج
+ *  بالاستهلاك + التخزين والاستقلالية) - مشترك بين الشاشة المباشرة وعرض
+ *  السعر المطبوع عشان يكون نفس الرقم والمنطق في المكانين بالظبط */
+function buildOgEnergyProfileHTML(r) {
+  const rows = (r.loadRows || []).map(l => {
+    // بنحترم هنا نفس تفعيل النهار/الليل اللي اختاره العميل، عشان الاستهلاك
+    // اليومي المعروض لكل جهاز يطابق مجموع R5 الكلي بالظبط ومايبقاش فيه رقم
+    // "شبح" لفترة العميل أصلًا مختارها متعطّلة
+    const nightWh = r.nightEnabled ? l.I : 0;
+    const dayWh = r.morningEnabled ? l.J : 0;
+    const dailyWh = nightWh + dayWh;
+    return `<tr>
+      <td>${l.name || '-'}</td>
+      <td>${fmt(l.watt)} W × ${fmt(l.count)}</td>
+      <td>${l.dayHours ? fmt(l.dayHours) + ' س' : '-'}</td>
+      <td>${l.nightHours ? fmt(l.nightHours) + ' س' : '-'}</td>
+      <td>${fmt(Math.round(dailyWh))} Wh</td>
+    </tr>`;
+  }).join('');
+
+  const production = r.O3 || 0;               // الطاقة المنتجة يوميًا من المحطة (Wh)
+  const demand = r.R5 || 0;                    // الطاقة المطلوبة يوميًا حسب ملف الأحمال (Wh)
+  const coveragePct = demand ? Math.min(999, Math.round((production / demand) * 100)) : 0;
+  const covered = production >= demand;
+  const barPct = Math.min(100, coveragePct);
+
+  const autonomyDays = demand ? (r.storedKWh * 1000 / demand) : 0;
+
+  return `
+    <div class="og-energy-profile">
+      <h3 style="margin:0 0 8px; font-size:var(--fs-section);">ملف الأحمال المطلوب (تفصيل كل جهاز)</h3>
+      <div style="overflow-x:auto;">
+        <table class="offer">
+          <thead><tr><th>الجهاز</th><th>القدرة × العدد</th><th>ساعات نهار</th><th>ساعات ليل</th><th>الاستهلاك اليومي</th></tr></thead>
+          <tbody>${rows}</tbody>
+          <tfoot><tr style="font-weight:700;"><td colspan="4">الإجمالي</td><td>${fmt(Math.round(demand))} Wh</td></tr></tfoot>
+        </table>
+      </div>
+
+      <h3 style="margin:16px 0 8px; font-size:var(--fs-section);">إنتاج المحطة مقابل احتياج العميل</h3>
+      <div class="line"><span>الطاقة المنتجة يوميًا من المحطة</span><span>${fmt(Math.round(production))} Wh</span></div>
+      <div class="line"><span>الطاقة المطلوبة يوميًا (حسب ملف الأحمال)</span><span>${fmt(Math.round(demand))} Wh</span></div>
+      <div style="background:var(--line-soft); border-radius:8px; height:10px; margin:8px 0; overflow:hidden;">
+        <div style="background:${covered ? 'var(--leaf)' : 'var(--danger)'}; width:${barPct}%; height:100%;"></div>
+      </div>
+      <div class="line final"><span>${covered ? '✓ المحطة بتغطي احتياج العميل بالكامل' : '⚠ المحطة مش مغطية كل الاحتياج'}</span><span style="color:${covered ? 'var(--leaf)' : 'var(--danger)'};">${coveragePct}%</span></div>
+
+      <h3 style="margin:16px 0 8px; font-size:var(--fs-section);">الطاقة المخزنة والاستقلالية عن الشمس</h3>
+      <div class="line"><span>إجمالي السعة المخزنة</span><span>${r.storedKWh.toFixed(1)} KWh</span></div>
+      <div class="line final"><span>عدد أيام الاستقلالية التقريبي (من غير شمس)</span><span>${autonomyDays.toFixed(1)} يوم</span></div>
+    </div>
+  `;
+}
+
 function ogRecalc() {
   const inputs = readOgInputs();
   const r = computeOffgridOffer(DATA, inputs);
@@ -1529,6 +1583,8 @@ function ogRecalc() {
     <div class="spec"><div class="k">التوافق</div><div class="v" style="color:${r.designOkay ? 'var(--leaf)' : 'var(--danger)'};">${r.designOkay ? 'متوافق ✓' : 'غير متوافق ⚠'}</div></div>
     <div class="spec"><div class="k">ألواح بالسلسلة (PV)</div><div class="v">${r.pvLimitVerified ? fmt(r.panelsPerString) : 'غير محدد'} <small style="color:var(--ink-faint); font-weight:400;">${r.pvLimitVerified ? '× ' + fmt(r.stringCount) + ' سلسلة' : '⚠ بدون بيانات'}</small></div></div>
   `;
+
+  document.getElementById('ogEnergyProfileBody').innerHTML = buildOgEnergyProfileHTML(r);
 
   document.querySelector('#ogOfferTable tbody').innerHTML = r.offer.rows.map(row => `
     <tr>
@@ -1629,6 +1685,8 @@ function ogPreparePrintAndPrint() {
   document.getElementById('ogPqPayment').innerHTML = r.paymentTerms.map(t => `
     <div class="row"><span>${t.label} (${Math.round(t.pct*100)}%)</span><span>${fmt(t.amount)} ${sym}</span></div>
   `).join('');
+
+  document.getElementById('ogPqEnergyProfileBody').innerHTML = buildOgEnergyProfileHTML(r);
 
   logQuoteRecord(buildOffgridQuoteRecord(r, inputs, quoteFilename));
 
