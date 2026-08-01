@@ -768,6 +768,18 @@ function renderAdminForms() {
   document.getElementById('cfgOgPanelMarkup').value = DATA.offgrid.panelMarkupPerWatt;
   document.getElementById('cfgOgDefaultSurgeCapacityPct').value = DATA.offgrid.defaultSurgeCapacityPct;
   document.getElementById('cfgOgDefaultAutonomyDays').value = DATA.offgrid.defaultAutonomyDays;
+
+  const ogAllInvBrands = [...new Set(DATA.offgrid.inverters.map(m => m.brand))].sort((a, b) => a.localeCompare(b, 'ar'));
+  const preferredInvSel = document.getElementById('cfgOgPreferredInvBrand');
+  preferredInvSel.innerHTML = '<option value="">(بدون تفضيل - أول ماركة أبجديًا)</option>' +
+    ogAllInvBrands.map(b => `<option value="${b}">${b}</option>`).join('');
+  preferredInvSel.value = DATA.offgrid.preferredInvBrand || '';
+
+  const ogAllBattBrands = [...new Set(DATA.offgrid.batteries.map(b => b.brand))].sort((a, b) => a.localeCompare(b, 'ar'));
+  const preferredBattSel = document.getElementById('cfgOgPreferredBattBrand');
+  preferredBattSel.innerHTML = '<option value="">(بدون تفضيل - أول ماركة أبجديًا)</option>' +
+    ogAllBattBrands.map(b => `<option value="${b}">${b}</option>`).join('');
+  preferredBattSel.value = DATA.offgrid.preferredBattBrand || '';
   document.getElementById('cfgOgSteelCost').value = DATA.offgrid.steelCostPerUnit;
   document.getElementById('cfgOgSteelMargin').value = DATA.offgrid.steelMarginPerUnit;
   document.getElementById('cfgOgCableCost').value = DATA.offgrid.cablesCostPerMeter;
@@ -1281,6 +1293,8 @@ function collectConstantsIntoData() {
   DATA.offgrid.panelMarkupPerWatt = Number(document.getElementById('cfgOgPanelMarkup').value);
   DATA.offgrid.defaultSurgeCapacityPct = Number(document.getElementById('cfgOgDefaultSurgeCapacityPct').value);
   DATA.offgrid.defaultAutonomyDays = Number(document.getElementById('cfgOgDefaultAutonomyDays').value);
+  DATA.offgrid.preferredInvBrand = document.getElementById('cfgOgPreferredInvBrand').value;
+  DATA.offgrid.preferredBattBrand = document.getElementById('cfgOgPreferredBattBrand').value;
   DATA.offgrid.steelCostPerUnit = Number(document.getElementById('cfgOgSteelCost').value);
   DATA.offgrid.steelMarginPerUnit = Number(document.getElementById('cfgOgSteelMargin').value);
   DATA.offgrid.cablesCostPerMeter = Number(document.getElementById('cfgOgCableCost').value);
@@ -1367,9 +1381,11 @@ function populateOgSelectors() {
 
   const invBrands = [...new Set(DATA.offgrid.inverters.map(m => m.brand))].sort((a, b) => a.localeCompare(b, 'ar'));
   document.getElementById('ogInvBrand').innerHTML = invBrands.map(b => `<option value="${b}">${b}</option>`).join('');
+  document.getElementById('ogInvBrand').value = invBrands.includes(DATA.offgrid.preferredInvBrand) ? DATA.offgrid.preferredInvBrand : invBrands[0];
 
   const battBrands = [...new Set(DATA.offgrid.batteries.map(b => b.brand))].sort((a, b) => a.localeCompare(b, 'ar'));
   document.getElementById('ogBattBrand').innerHTML = battBrands.map(b => `<option value="${b}">${b}</option>`).join('');
+  document.getElementById('ogBattBrand').value = battBrands.includes(DATA.offgrid.preferredBattBrand) ? DATA.offgrid.preferredBattBrand : battBrands[0];
 
   document.getElementById('ogPsh').value = DATA.offgrid.psh;
   document.getElementById('ogSafetyFactor').value = DATA.offgrid.safetyFactor;
