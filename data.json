@@ -2538,7 +2538,7 @@
     "systemEfficiency": 0.78,
     "defaultSurgeCapacityPct": 1.5,
     "defaultAutonomyDays": 0,
-    "preferredInvBrand": "",
-    "preferredBattBrand": ""
+    "preferredInvBrand": "VEICHI",
+    "preferredBattBrand": "Sinopoly"
   }
 }
