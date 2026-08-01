@@ -760,6 +760,8 @@ function renderAdminForms() {
   ogLoadsBody.innerHTML = '';
   DATA.offgrid.loads.forEach((l, i) => ogLoadsBody.appendChild(ogLoadRow(l, i)));
 
+  renderOgPresetsAdmin();
+
   document.getElementById('cfgOgPsh').value = DATA.offgrid.psh;
   document.getElementById('cfgOgSafetyFactor').value = DATA.offgrid.safetyFactor;
   document.getElementById('cfgOgExtraPanels').value = DATA.offgrid.extraPanels;
@@ -866,6 +868,77 @@ function ogBattRow(b, i) {
   tr.querySelector('[data-rm-ogbatt]').addEventListener('click', () => { DATA.offgrid.batteries.splice(i,1); renderAdminForms(); });
   return tr;
 }
+
+function renderOgPresetsAdmin() {
+  if (!DATA.offgrid.presets) DATA.offgrid.presets = [];
+  const wrap = document.getElementById('ogPresetsAdmin');
+  const loadNames = DATA.offgrid.loads.map(l => l.name);
+
+  wrap.innerHTML = DATA.offgrid.presets.map((preset, pi) => `
+    <div class="og-preset-admin-card" style="border:1px solid var(--line-soft,#e1e0d9); border-radius:10px; padding:14px; margin-top:12px;">
+      <div class="row2">
+        <div class="field"><label>اسم العرض</label><input type="text" data-preset-field="name" data-preset-i="${pi}" value="${preset.name || ''}"></div>
+        <div class="field"><label>الوصف</label><input type="text" data-preset-field="description" data-preset-i="${pi}" value="${preset.description || ''}"></div>
+      </div>
+      <table class="tbl-edit" style="margin-top:10px;">
+        <thead><tr><th>الجهاز</th><th style="width:90px;">العدد</th><th style="width:40px;"></th></tr></thead>
+        <tbody>
+          ${(preset.items || []).map((item, ii) => `
+            <tr>
+              <td>
+                <select data-preset-i="${pi}" data-item-i="${ii}" data-item-field="load">
+                  ${loadNames.map(n => `<option value="${n}" ${n === item.load ? 'selected' : ''}>${n}</option>`).join('')}
+                </select>
+              </td>
+              <td><input type="number" min="1" step="1" value="${item.count}" data-preset-i="${pi}" data-item-i="${ii}" data-item-field="count"></td>
+              <td><button class="rm" data-rm-item data-preset-i="${pi}" data-item-i="${ii}">×</button></td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+      <div style="display:flex; gap:8px; margin-top:10px;">
+        <button class="btn ghost small" data-add-item data-preset-i="${pi}">+ إضافة جهاز للعرض</button>
+        <button class="btn ghost small" data-rm-preset data-preset-i="${pi}" style="color:var(--danger,#c0392b); margin-inline-start:auto;">🗑 حذف العرض بالكامل</button>
+      </div>
+    </div>
+  `).join('') || '<p style="font-size:13px; color:var(--ink-faint); margin-top:10px;">مفيش عروض جاهزة مسجّلة - اضغط "إضافة عرض جديد" تحت.</p>';
+
+  wrap.querySelectorAll('[data-preset-field]').forEach(inp => inp.addEventListener('input', () => {
+    const pi = Number(inp.dataset.presetI);
+    DATA.offgrid.presets[pi][inp.dataset.presetField] = inp.value;
+  }));
+
+  wrap.querySelectorAll('[data-item-field]').forEach(el => el.addEventListener('input', () => {
+    const pi = Number(el.dataset.presetI), ii = Number(el.dataset.itemI);
+    const val = el.dataset.itemField === 'count' ? (Number(el.value) || 1) : el.value;
+    DATA.offgrid.presets[pi].items[ii][el.dataset.itemField] = val;
+  }));
+
+  wrap.querySelectorAll('[data-rm-item]').forEach(btn => btn.addEventListener('click', () => {
+    const pi = Number(btn.dataset.presetI), ii = Number(btn.dataset.itemI);
+    DATA.offgrid.presets[pi].items.splice(ii, 1);
+    renderOgPresetsAdmin();
+  }));
+
+  wrap.querySelectorAll('[data-add-item]').forEach(btn => btn.addEventListener('click', () => {
+    const pi = Number(btn.dataset.presetI);
+    if (!loadNames.length) { toast('محتاج تضيف جهاز واحد على الأقل في قائمة الأحمال الأول', 'err'); return; }
+    DATA.offgrid.presets[pi].items.push({ load: loadNames[0], count: 1 });
+    renderOgPresetsAdmin();
+  }));
+
+  wrap.querySelectorAll('[data-rm-preset]').forEach(btn => btn.addEventListener('click', () => {
+    const pi = Number(btn.dataset.presetI);
+    DATA.offgrid.presets.splice(pi, 1);
+    renderOgPresetsAdmin();
+  }));
+}
+
+document.getElementById('addOgPresetBtn').addEventListener('click', () => {
+  if (!DATA.offgrid.presets) DATA.offgrid.presets = [];
+  DATA.offgrid.presets.push({ name: 'عرض جديد', description: '', items: [] });
+  renderOgPresetsAdmin();
+});
 
 function ogLoadRow(l, i) {
   const tr = document.createElement('tr');

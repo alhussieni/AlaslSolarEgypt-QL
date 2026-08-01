@@ -2594,10 +2594,6 @@
           {
             "load": "charger/router",
             "count": 1
-          },
-          {
-            "load": "غسالة",
-            "count": 1
           }
         ]
       },
@@ -2619,10 +2615,6 @@
           },
           {
             "load": "تلفاز LCD",
-            "count": 1
-          },
-          {
-            "load": "غسالة",
             "count": 1
           },
           {
