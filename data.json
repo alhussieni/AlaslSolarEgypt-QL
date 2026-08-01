@@ -2388,7 +2388,7 @@
         "runningFactor": 0.8,
         "nightHours": 18,
         "dayHours": 6,
-        "surgeFactor": 3
+        "surgeFactor": 7
       },
       {
         "name": "كشاف",
@@ -2404,7 +2404,7 @@
         "runningFactor": 0.8,
         "nightHours": 18,
         "dayHours": 6,
-        "surgeFactor": 3
+        "surgeFactor": 7
       },
       {
         "name": "موتور 1 حصان",
@@ -2412,7 +2412,7 @@
         "runningFactor": 1,
         "nightHours": 2,
         "dayHours": 0.25,
-        "surgeFactor": 5
+        "surgeFactor": 7
       },
       {
         "name": "موتور 1 حصان -220",
@@ -2420,7 +2420,7 @@
         "runningFactor": 1,
         "nightHours": 7,
         "dayHours": 5,
-        "surgeFactor": 5
+        "surgeFactor": 7
       },
       {
         "name": "microwave",
@@ -2444,7 +2444,7 @@
         "runningFactor": 1,
         "nightHours": 14,
         "dayHours": 10,
-        "surgeFactor": 5
+        "surgeFactor": 7
       },
       {
         "name": "موتور غاطس",
@@ -2452,7 +2452,7 @@
         "runningFactor": 1,
         "nightHours": 0.5,
         "dayHours": 2,
-        "surgeFactor": 5
+        "surgeFactor": 7
       },
       {
         "name": "AC 1.5HP",
@@ -2460,7 +2460,7 @@
         "runningFactor": 0.75,
         "nightHours": 8,
         "dayHours": 8,
-        "surgeFactor": 4
+        "surgeFactor": 7
       },
       {
         "name": "هيتر",
@@ -2476,7 +2476,7 @@
         "runningFactor": 1,
         "nightHours": 0,
         "dayHours": 2,
-        "surgeFactor": 3
+        "surgeFactor": 7
       },
       {
         "name": "AC 2.5 HP",
@@ -2484,7 +2484,7 @@
         "runningFactor": 0.5,
         "nightHours": 8,
         "dayHours": 8,
-        "surgeFactor": 4
+        "surgeFactor": 7
       },
       {
         "name": "AC 3 HP",
@@ -2492,7 +2492,7 @@
         "runningFactor": 0.5,
         "nightHours": 8,
         "dayHours": 8,
-        "surgeFactor": 4
+        "surgeFactor": 7
       },
       {
         "name": "Motor 5.5HP",
@@ -2500,7 +2500,7 @@
         "runningFactor": 1,
         "nightHours": 1,
         "dayHours": 0,
-        "surgeFactor": 5
+        "surgeFactor": 7
       },
       {
         "name": "Switch POE",

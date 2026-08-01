@@ -77,8 +77,11 @@ function computeOffgridOffer(data, inputs) {
   if (!inputs.invBrand) { errors.push('اختار ماركة الانفرتر.'); return { errors }; }
   if (!inputs.battBrand) { errors.push('اختار ماركة البطارية.'); return { errors }; }
 
-  const psh = Number(inputs.psh) || og.psh;
-  const safetyFactor = Number(inputs.safetyFactor) || og.safetyFactor;
+  const psh = Number(inputs.psh) || og.psh; // صفر ساعات شمس مالوش معنى فيزيائيًا، فالرجوع للافتراضي هنا مقصود وسليم
+  // safetyFactor=0 قيمة صحيحة ممكن حد يقصدها ("احسبلي بالظبط من غير أي هامش
+  // أمان زيادة") - نفس مشكلة falsy-zero اللي أصلحناها في runningFactor
+  const safetyFactor = (inputs.safetyFactor === undefined || inputs.safetyFactor === null || inputs.safetyFactor === '')
+    ? og.safetyFactor : Number(inputs.safetyFactor);
   // احترنا هنا بمشكلة falsy-zero اللي أصلحناها قبل كده في runningFactor: صفر
   // قيمة صحيحة ومقصودة لأيام الاستقلالية (يعني "ليلة واحدة بس")، فمينفعش
   // نستخدم (Number(inputs.autonomyDays) || og.defaultAutonomyDays) لأن
