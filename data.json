@@ -3,7 +3,7 @@
     "companyName": "الأصل للطاقة الشمسية",
     "currency": "جنيه مصري",
     "currencySymbol": "ج.م",
-    "lastUpdated": "2026-08-01",
+    "lastUpdated": "2026-07-18",
     "adminUsername": "admin",
     "adminPasswordHash": "240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9",
     "quotesWorkerUrl": ""
@@ -2463,6 +2463,14 @@
         "surgeFactor": 7
       },
       {
+        "name": "AC 1.5HP - استخدام موسمي",
+        "watt": 1100,
+        "runningFactor": 0.75,
+        "nightHours": 4,
+        "dayHours": 4,
+        "surgeFactor": 7
+      },
+      {
         "name": "هيتر",
         "watt": 9000,
         "runningFactor": 1,
@@ -2538,7 +2546,91 @@
     "systemEfficiency": 0.78,
     "defaultSurgeCapacityPct": 1.5,
     "defaultAutonomyDays": 0,
-    "preferredInvBrand": "VEICHI",
-    "preferredBattBrand": "Sinopoly"
+    "preferredInvBrand": "",
+    "preferredBattBrand": "",
+    "presets": [
+      {
+        "name": "منزل مزرعة صغيرة - فردين",
+        "description": "غرفة نوم وحمام ومطبخ + مدخل",
+        "items": [
+          {
+            "load": "لمبة - LED Light",
+            "count": 4
+          },
+          {
+            "load": "ثلاجة",
+            "count": 1
+          },
+          {
+            "load": "charger/router",
+            "count": 1
+          },
+          {
+            "load": "مروحة",
+            "count": 1
+          }
+        ]
+      },
+      {
+        "name": "منزل عمال مزرعة - 4 أفراد",
+        "description": "غرفتين نوم وحمام ومطبخ + مدخل",
+        "items": [
+          {
+            "load": "لمبة - LED Light",
+            "count": 5
+          },
+          {
+            "load": "ثلاجة",
+            "count": 1
+          },
+          {
+            "load": "مروحة",
+            "count": 2
+          },
+          {
+            "load": "تلفاز LCD",
+            "count": 1
+          },
+          {
+            "load": "charger/router",
+            "count": 1
+          },
+          {
+            "load": "غسالة",
+            "count": 1
+          }
+        ]
+      },
+      {
+        "name": "استراحة مهندس و6 عمال - 7 أفراد",
+        "description": "غرفة مهندس وغرفتين عمال وحمام ومطبخ + مدخل",
+        "items": [
+          {
+            "load": "لمبة - LED Light",
+            "count": 6
+          },
+          {
+            "load": "ثلاجة",
+            "count": 1
+          },
+          {
+            "load": "مروحة",
+            "count": 4
+          },
+          {
+            "load": "تلفاز LCD",
+            "count": 1
+          },
+          {
+            "load": "غسالة",
+            "count": 1
+          },
+          {
+            "load": "charger/router",
+            "count": 2
+          }
+        ]
+      }
+    ]
   }
 }

@@ -1395,6 +1395,8 @@ function populateOgSelectors() {
     DATA.offgrid.loads.map((l, i) => `<option value="${i}">${l.name} (${l.watt}W)</option>`).join('') +
     `<option value="__custom__">+ جهاز غير مسجل (أضف بياناته)</option>`;
 
+  renderOgPresetButtons();
+
   ogSelectedLoads = []; // ابدأ بقائمة فاضية - الزائر يضيف بس اللي عنده فعلًا
   renderOgSelectedLoads();
 }
@@ -1432,6 +1434,37 @@ function renderOgSelectedLoads() {
     renderOgSelectedLoads();
     ogRecalc();
   }));
+}
+
+function renderOgPresetButtons() {
+  const wrap = document.getElementById('ogPresetButtons');
+  const presets = DATA.offgrid.presets || [];
+  if (!presets.length) { wrap.innerHTML = ''; return; }
+  wrap.innerHTML = presets.map((p, i) => `
+    <button type="button" class="og-preset-btn" data-preset-i="${i}" title="${p.description || ''}">
+      ${p.name}
+    </button>
+  `).join('');
+  wrap.querySelectorAll('[data-preset-i]').forEach(btn => btn.addEventListener('click', () => {
+    applyOgPreset(Number(btn.dataset.presetI));
+  }));
+}
+
+function applyOgPreset(presetIndex) {
+  const preset = (DATA.offgrid.presets || [])[presetIndex];
+  if (!preset) return;
+  const missing = [];
+  const newLoads = [];
+  preset.items.forEach(item => {
+    const def = DATA.offgrid.loads.find(l => l.name === item.load);
+    if (!def) { missing.push(item.load); return; }
+    newLoads.push({ ...def, count: item.count });
+  });
+  ogSelectedLoads = newLoads; // العرض الجاهز بيستبدل القائمة الحالية بالكامل - الزائر يقدر يعدّل بعد كده عادي
+  renderOgSelectedLoads();
+  ogRecalc();
+  if (missing.length) toast(`تنبيه: الأجهزة دي مش موجودة في الكتالوج حاليًا واتجاهلت: ${missing.join('، ')}`, 'err');
+  else toast(`اتطبّق عرض "${preset.name}" - تقدر تعدّل أي جهاز أو تضيف/تشيل زي أي وقت`, 'ok');
 }
 
 document.getElementById('ogAddLoadBtn').addEventListener('click', () => {

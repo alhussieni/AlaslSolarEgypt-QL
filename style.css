@@ -395,6 +395,13 @@ table.offer tfoot td{padding-top:12px; font-weight:800;}
 }
 .btn-add-load:hover{background:var(--sun-deep);}
 
+/* أزرار العروض الجاهزة (Presets) فوق قائمة الأحمال */
+.og-preset-btn{
+  padding:9px 16px; border-radius:999px; border:1.5px solid var(--line, #e1e0d9); background:#fff;
+  color:var(--ink-dim); font-size:13px; font-weight:700; cursor:pointer; transition:.15s;
+}
+.og-preset-btn:hover{border-color:var(--sun); color:var(--sun-deep); background:var(--sun-soft, #fdf3e4);}
+
 /* ============ لوحة الأدمن: تصميم هجين (Sidebar + Cards) ============ */
 .admin-shell{display:grid; grid-template-columns:220px 1fr; gap:var(--sp-3); align-items:start;}
 @media (max-width:860px){ .admin-shell{grid-template-columns:1fr;} }
