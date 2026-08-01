@@ -1507,13 +1507,10 @@ function buildOgEnergyProfileHTML(r) {
     </tr>`;
   }).join('');
 
-  const production = r.O3 || 0;               // الطاقة المنتجة يوميًا من المحطة (Wh)
-  const demand = r.R5 || 0;                    // الطاقة المطلوبة يوميًا حسب ملف الأحمال (Wh)
-  const coveragePct = demand ? Math.min(999, Math.round((production / demand) * 100)) : 0;
-  const covered = production >= demand;
-  const barPct = Math.min(100, coveragePct);
-
-  const autonomyDaysActual = demand ? (r.storedKWh * 1000 / demand) : 0;
+  const production = r.O3 || 0;               // إنتاج الألواح خلال النهار يوميًا (Wh)
+  const dayConsumption = r.R3 || 0;            // الاستهلاك خلال النهار (Wh)
+  const nightConsumption = r.R4 || 0;          // الطاقة اللي بتتسحب من البطارية فعليًا بالليل (Wh)
+  const dailyLoadPctOfBattery = r.O9 ? Math.round((r.R5 / r.O9) * 100) : 0; // نسبة إجمالي الأحمال اليومية من سعة البطارية الكلية
 
   return `
     <div class="og-energy-profile">
@@ -1522,22 +1519,15 @@ function buildOgEnergyProfileHTML(r) {
         <table class="offer">
           <thead><tr><th>الجهاز</th><th>القدرة × العدد</th><th>ساعات نهار</th><th>ساعات ليل</th><th>الاستهلاك اليومي</th></tr></thead>
           <tbody>${rows}</tbody>
-          <tfoot><tr style="font-weight:700;"><td colspan="4">الإجمالي</td><td>${fmt(Math.round(demand))} Wh</td></tr></tfoot>
+          <tfoot><tr style="font-weight:700;"><td colspan="4">الإجمالي</td><td>${fmt(Math.round(r.R5 || 0))} Wh</td></tr></tfoot>
         </table>
       </div>
 
-      <h3 style="margin:16px 0 8px; font-size:var(--fs-section);">إنتاج المحطة مقابل احتياج العميل</h3>
-      <div class="line"><span>الطاقة المنتجة يوميًا من المحطة</span><span>${fmt(Math.round(production))} Wh</span></div>
-      <div class="line"><span>الطاقة المطلوبة يوميًا (حسب ملف الأحمال)</span><span>${fmt(Math.round(demand))} Wh</span></div>
-      <div style="background:var(--line-soft); border-radius:8px; height:10px; margin:8px 0; overflow:hidden;">
-        <div style="background:${covered ? 'var(--leaf)' : 'var(--danger)'}; width:${barPct}%; height:100%;"></div>
-      </div>
-      <div class="line final"><span>${covered ? '✓ المحطة بتغطي احتياج العميل بالكامل' : '⚠ المحطة مش مغطية كل الاحتياج'}</span><span style="color:${covered ? 'var(--leaf)' : 'var(--danger)'};">${coveragePct}%</span></div>
-
-      <h3 style="margin:16px 0 8px; font-size:var(--fs-section);">الطاقة المخزنة والاستقلالية عن الشمس</h3>
-      <div class="line"><span>أيام الاستقلالية المطلوبة (بعد ليلة التشغيل الأساسية)</span><span>${(r.autonomyDays || 0).toFixed(1)} يوم</span></div>
-      <div class="line"><span>إجمالي السعة المخزنة</span><span>${r.storedKWh.toFixed(1)} KWh</span></div>
-      <div class="line final"><span>عدد أيام الاستقلالية الفعلي المتحقق (من غير شمس)</span><span>${autonomyDaysActual.toFixed(1)} يوم</span></div>
+      <h3 style="margin:16px 0 8px; font-size:var(--fs-section);">ملخص الأداء الطاقي</h3>
+      <div class="line"><span>إنتاج الألواح خلال النهار يوميًا</span><span>${fmt(Math.round(production))} Wh</span></div>
+      <div class="line"><span>الاستهلاك خلال النهار</span><span>${fmt(Math.round(dayConsumption))} Wh</span></div>
+      <div class="line"><span>الطاقة المسحوبة من البطاريات للاستخدام الليلي</span><span>${fmt(Math.round(nightConsumption))} Wh</span></div>
+      <div class="line final"><span>نسبة الأحمال اليومية من إجمالي حجم البطارية</span><span>${dailyLoadPctOfBattery}%</span></div>
     </div>
   `;
 }
