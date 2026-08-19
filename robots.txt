@@ -1,0 +1,6 @@
+User-agent: *
+Disallow: /article.html
+
+Allow: /
+
+Sitemap: https://alaslsolar.com/sitemap.xml

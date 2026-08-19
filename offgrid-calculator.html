@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-N97W09ZNSP"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-N97W09ZNSP');
+  </script>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="حاسبة نظام الطاقة الشمسية بالبطاريات (أوف جريد) — احسب حجم الانفرتر والبطاريات والألواح المطلوبة من واقع أحمالك">
+  <meta name="theme-color" content="#0d0b0a">
+  <title>حاسبة أنظمة الأوف جريد | الأصل للطاقة الشمسية</title>
+  <link rel="canonical" href="https://alaslsolar.com/offgrid-calculator.html">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preload" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap"></noscript>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+  <link rel="stylesheet" href="styles.css">
+  <script defer src="app.js"></script>
+
+  <style>
+    /* ── reuse pump-calculator's shared classes; only page-specific extras below ── */
+    .calc-disclaimer { display: flex; gap: var(--space-3); align-items: flex-start; padding: var(--space-3) var(--space-4); border-radius: var(--radius-lg); background: linear-gradient(135deg, #fffbf2, #fef3db); border: 1.5px solid #f5c842; margin-bottom: var(--space-4); }
+    .calc-disclaimer i { color: #c8860a; font-size: 22px; flex-shrink: 0; margin-top: 2px; }
+    .calc-disclaimer p { margin: 0; font-size: 14px; line-height: 1.75; color: var(--ink); }
+    .calc-disclaimer strong { color: #7a4f0a; }
+    .calc-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); align-items: start; }
+    @media(max-width:860px){ .calc-wrap { grid-template-columns: 1fr; } }
+    .calc-panel { background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(255,250,245,0.95)); border: 1px solid var(--line); border-radius: var(--radius-lg); box-shadow: var(--shadow); padding: var(--space-4); }
+    .calc-panel-title { font-size: 15px; font-weight: 800; color: var(--ink); margin: 0 0 var(--space-3); padding-bottom: var(--space-2); border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 9px; }
+    .calc-panel-title i { color: var(--brand); font-size: 19px; }
+    .field-group { display: grid; gap: var(--space-2); margin-bottom: var(--space-2); }
+    .field-group.g2 { grid-template-columns: 1fr 1fr; }
+    .field-group.g3 { grid-template-columns: 1fr 1fr 1fr; }
+    .field-group.g1 { grid-template-columns: 1fr; }
+    @media(max-width:520px){ .field-group.g2, .field-group.g3 { grid-template-columns: 1fr; } }
+    .field { display: flex; flex-direction: column; gap: 5px; }
+    .field label { font-size: 12px; font-weight: 700; color: var(--muted); letter-spacing: 0.02em; }
+    .field input, .field select { height: 42px; padding: 0 var(--space-2); border: 1.5px solid var(--line); border-radius: var(--radius); background: #fff; color: var(--ink); font-family: 'Cairo', sans-serif; font-size: 14px; font-weight: 600; width: 100%; transition: border-color 0.18s, box-shadow 0.18s; }
+    .field input:focus, .field select:focus { outline: none; border-color: var(--brand); box-shadow: 0 0 0 3px rgba(200,117,45,0.13); }
+    .field-hint { font-size: 11px; color: var(--steel); margin-top: 2px; }
+
+    .results-panel { grid-column: 1 / -1; background: linear-gradient(180deg, rgba(255,255,255,0.99), rgba(255,250,245,0.95)); border: 1px solid var(--line); border-radius: var(--radius-lg); box-shadow: var(--shadow); padding: var(--space-4); }
+    .results-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--space-2); margin-bottom: var(--space-3); padding-bottom: var(--space-2); border-bottom: 1px solid var(--line); }
+    .results-title { font-size: 16px; font-weight: 800; color: var(--ink); margin: 0; }
+    .metrics-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(145px,1fr)); gap: var(--space-2); margin-bottom: var(--space-3); }
+    .metric-card { background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(255,250,245,0.92)); border: 1px solid var(--line); border-radius: var(--radius); padding: var(--space-3); }
+    .metric-card.accent { background: linear-gradient(135deg, #1d1a18, #2e2520); border-color: transparent; color: #fff; }
+    .metric-card.brand { background: linear-gradient(135deg, var(--brand), var(--brand-dark)); border-color: transparent; color: #fff; }
+    .metric-label { font-size: 11px; font-weight: 700; color: var(--muted); margin-bottom: 4px; letter-spacing: 0.04em; text-transform: uppercase; }
+    .metric-card.accent .metric-label, .metric-card.brand .metric-label { color: rgba(255,255,255,0.72); }
+    .metric-value { font-size: 24px; font-weight: 800; line-height: 1.1; }
+    .metric-card.accent .metric-value, .metric-card.brand .metric-value { color: #fff; }
+    .metric-unit { font-size: 12px; color: var(--muted); margin-top: 3px; }
+    .metric-card.accent .metric-unit, .metric-card.brand .metric-unit { color: rgba(255,255,255,0.68); }
+
+    .og-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .og-table th { text-align: right; padding: 9px 12px; background: #f7f3ee; border-bottom: 2px solid var(--line); font-size: 11px; font-weight: 800; color: var(--muted); letter-spacing: 0.05em; }
+    .og-table td { padding: 10px 12px; border-bottom: 1px solid var(--line); color: var(--ink); font-weight: 600; }
+    .og-table tbody tr:last-child td { border-bottom: none; }
+    .og-table tfoot td { font-weight: 800; background: var(--brand-soft); color: var(--brand-dark); font-size: 14px; }
+
+    .calc-note { display: flex; gap: var(--space-2); align-items: flex-start; padding: var(--space-2) var(--space-3); border-radius: var(--radius); font-size: 13px; line-height: 1.7; margin-top: var(--space-2); }
+    .calc-note i { font-size: 17px; flex-shrink: 0; margin-top: 1px; }
+    .calc-note.warn { background: #fffbf2; border: 1px solid #f5c842; color: var(--ink); }
+    .calc-note.warn i { color: #c8860a; }
+    .calc-note.info { background: var(--brand-soft); border: 1px solid #e8c49a; color: var(--ink); }
+    .calc-note.info i { color: var(--brand-dark); }
+
+    .footer-disclaimer { margin-top: var(--space-4); padding: var(--space-3) var(--space-4); border-radius: var(--radius-lg); background: #0d0b0a; color: rgba(255,255,255,0.82); display: flex; gap: var(--space-3); align-items: flex-start; font-size: 13px; line-height: 1.75; }
+    .footer-disclaimer i { font-size: 22px; color: var(--brand); flex-shrink: 0; margin-top: 2px; }
+    .footer-disclaimer strong { color: #fff; }
+
+    /* Loads table */
+    .loads-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .loads-table th { text-align: right; padding: 6px 8px; font-size: 10px; font-weight: 800; color: var(--muted); border-bottom: 1.5px solid var(--line); }
+    .loads-table td { padding: 5px 8px; border-bottom: 1px solid var(--line); }
+    .loads-table input[type="number"] { height: 32px; width: 100%; padding: 0 6px; border: 1.5px solid var(--line); border-radius: 6px; font-family: 'Cairo', sans-serif; font-size: 13px; font-weight: 700; text-align: center; }
+    .load-remove-btn { background: none; border: none; color: #c33; cursor: pointer; font-size: 15px; padding: 4px; }
+    .load-remove-btn:hover { color: #a11; }
+    .loads-table .load-name { font-weight: 700; font-size: 12px; }
+    .loads-scroll { max-height: 340px; overflow-y: auto; border: 1px solid var(--line); border-radius: var(--radius); }
+    .presets-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: var(--space-3); }
+    .preset-btn { font-family: 'Cairo', sans-serif; font-size: 12px; font-weight: 700; padding: 7px 12px; border-radius: 999px; border: 1.5px solid var(--line); background: #fff; color: var(--ink); cursor: pointer; }
+    .preset-btn:hover { border-color: var(--brand); color: var(--brand-dark); }
+    /* .btn-secondary from styles.css is designed for dark hero backgrounds
+       (white text on translucent white) — invisible on our white cards, so
+       calculator buttons on light panels use this instead. */
+    .btn-light { display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+      border: 1.5px solid var(--line); background: #fff; color: var(--brand-dark); font-weight: 700;
+      border-radius: var(--radius); padding: 0 16px; cursor: pointer; font-family: 'Cairo', sans-serif; }
+    .btn-light:hover { background: var(--brand-soft); border-color: var(--brand); }
+    .toggle-row { display: flex; gap: var(--space-3); margin: var(--space-2) 0; }
+    .toggle-chip { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; cursor: pointer; }
+
+    .calc-empty { text-align: center; padding: var(--space-5); color: var(--muted); }
+    .calc-empty i { font-size: 48px; display: block; margin-bottom: var(--space-2); color: var(--brand-soft); }
+    .calc-divider { height: 1px; background: var(--line); margin: var(--space-3) 0; }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main">تخطي إلى المحتوى</a>
+
+  <header class="site-header">
+    <a class="brand" href="index.html" aria-label="الأصل للطاقة الشمسية">
+      <img src="logo-white.png" alt="شعار الأصل للطاقة الشمسية" width="120" height="70" loading="eager">
+    </a>
+    <button class="menu-toggle" type="button" aria-controls="siteMenu" aria-expanded="false" data-menu-toggle>
+      <i class="fa fa-bars" aria-hidden="true"></i>
+      <span class="sr-only">فتح القائمة</span>
+    </button>
+    <nav class="site-menu" id="siteMenu" aria-label="التنقل الرئيسي">
+      <a href="index.html">الرئيسية</a>
+      <a href="about.html">من نحن</a>
+      <a href="services.html">الخدمات</a>
+      <a href="products.html">المنتجات</a>
+      <a href="projects.html">المشاريع</a>
+      <a href="articles.html">المقالات</a>
+      <a href="calculators.html" aria-current="page" style="color:#e8954a;">الحاسبات</a>
+      <a href="contact.html">تواصل معنا</a>
+    </nav>
+  </header>
+
+  <main id="main">
+
+    <section class="page-hero">
+      <p class="eyebrow">
+        <a href="calculators.html" style="color:rgba(255,255,255,.6);text-decoration:none;font-weight:700;">الحاسبات</a>
+        <i class="ti ti-chevron-left" style="font-size:11px;margin:0 4px;color:rgba(255,255,255,.4);"></i>
+        <span style="color:#e8954a;">أوف جريد</span>
+      </p>
+      <h1>حاسبة أنظمة الطاقة الشمسية بالبطاريات (Off-Grid)</h1>
+      <p class="hero-slogan">حجم الانفرتر · البطاريات · الألواح — من واقع أحمالك الفعلية</p>
+      <p style="color:rgba(255,255,255,0.72);font-size:15px;max-width:680px;margin-top:var(--space-2);">
+        أدخل الأجهزة اللي هتشغّلها وساعات تشغيلها، واختار الماركات، وهتطلع لك تكلفة الخامات فقط (من غير تركيب أو نقل).
+      </p>
+    </section>
+
+    <section class="section reveal">
+
+      <div class="calc-disclaimer">
+        <i class="fa fa-triangle-exclamation" aria-hidden="true"></i>
+        <p>
+          <strong>تنويه هام:</strong> النتائج هنا <strong>تقديرية للتخطيط الأولي</strong> وتشمل
+          <strong>تكلفة الخامات فقط</strong> (الألواح، الانفرتر، البطاريات، الشاسيه، الكابلات، الإكسسوارات) —
+          <strong>بدون تركيب أو نقل</strong>. للتسعير النهائي الدقيق تواصل مباشرة مع مهندسي الشركة.
+        </p>
+      </div>
+
+      <div class="calc-empty" id="ogDisabledState" hidden>
+        <i class="fa fa-screwdriver-wrench" aria-hidden="true"></i>
+        <p>حاسبة الأوف جريد قيد التطوير حاليًا وهترجع تشتغل قريبًا. تواصل معنا مباشرة في الوقت ده لحساب منظومتك.</p>
+      </div>
+
+      <div id="ogCalcWrapOuter">
+      <div class="calc-wrap">
+
+        <!-- Panel: Loads -->
+        <div class="calc-panel" style="grid-column: 1 / -1;">
+          <h2 class="calc-panel-title"><i class="ti ti-bulb"></i> الأحمال المطلوب تشغيلها</h2>
+
+          <div class="presets-row" id="ogPresets"></div>
+
+          <div class="field-group g2" style="align-items:flex-end;">
+            <div class="field">
+              <label for="ogLoadPicker">اختار جهاز تضيفه</label>
+              <select id="ogLoadPicker"></select>
+            </div>
+            <button type="button" class="btn-light" id="ogAddLoadBtn" style="height:42px;">
+              <i class="fa fa-plus" aria-hidden="true"></i> أضف الجهاز
+            </button>
+          </div>
+
+          <p class="field-hint" id="ogNoLoadsHint">لسه ماضفتش أي جهاز — اختار من القايمة فوق، أو دوس على إحدى المنظومات الجاهزة.</p>
+
+          <div class="loads-scroll" id="ogAddedLoadsWrap" hidden>
+            <table class="loads-table">
+              <thead>
+                <tr>
+                  <th style="width:30%;">الجهاز</th>
+                  <th>القدرة (وات)</th>
+                  <th>العدد</th>
+                  <th>ساعات نهار</th>
+                  <th>ساعات ليل</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="ogLoadsBody"></tbody>
+            </table>
+          </div>
+
+          <div class="toggle-row">
+            <label class="toggle-chip"><input type="checkbox" id="ogMorning" checked> تشغيل فترة النهار</label>
+            <label class="toggle-chip"><input type="checkbox" id="ogNight" checked> تشغيل فترة الليل</label>
+          </div>
+        </div>
+
+        <!-- Panel: System settings -->
+        <div class="calc-panel">
+          <h2 class="calc-panel-title"><i class="ti ti-settings"></i> إعدادات النظام</h2>
+          <div class="field-group g2">
+            <div class="field">
+              <label for="ogPsh">متوسط ساعات الشمس (PSH)</label>
+              <input type="number" id="ogPsh" value="6" min="1" step="0.5">
+            </div>
+            <div class="field">
+              <label for="ogSafety">معامل الأمان</label>
+              <input type="number" id="ogSafety" value="1.1" min="1" step="0.05">
+            </div>
+          </div>
+          <div class="field-group g2">
+            <div class="field">
+              <label for="ogAutonomy">أيام الاستقلالية (بدون شمس)</label>
+              <input type="number" id="ogAutonomy" value="0" min="0" step="1">
+              <p class="field-hint">0 = تغطية ليلة تشغيل عادية بس</p>
+            </div>
+            <div class="field">
+              <label for="ogPhase">عدد الفازات</label>
+              <select id="ogPhase">
+                <option value="single">أحادي الفاز</option>
+                <option value="three">ثلاثي الفاز</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Panel: Brands -->
+        <div class="calc-panel">
+          <h2 class="calc-panel-title"><i class="ti ti-tag"></i> الماركات</h2>
+          <div class="field-group g1">
+            <div class="field">
+              <label for="ogInvBrand">ماركة الانفرتر</label>
+              <select id="ogInvBrand"></select>
+            </div>
+            <div class="field">
+              <label for="ogBattBrand">ماركة البطارية</label>
+              <select id="ogBattBrand"></select>
+            </div>
+            <div class="field">
+              <label for="ogPanelBrand">ماركة الألواح</label>
+              <select id="ogPanelBrand"></select>
+            </div>
+            <div class="field">
+              <label for="ogPanelWatt">قدرة اللوح</label>
+              <select id="ogPanelWatt"></select>
+            </div>
+          </div>
+          <button type="button" class="btn btn-primary" id="ogCalcBtn" style="width:100%;margin-top:var(--space-2);">
+            <i class="fa fa-calculator" aria-hidden="true"></i> احسب النظام
+          </button>
+        </div>
+
+        <!-- Results -->
+        <div class="results-panel" id="ogResults" hidden>
+          <div class="results-header">
+            <h2 class="results-title">نتيجة الحساب</h2>
+          </div>
+
+          <div class="metrics-row" id="ogMetrics"></div>
+
+          <div id="ogNotes"></div>
+
+          <div class="calc-divider"></div>
+
+          <table class="og-table">
+            <thead>
+              <tr><th>البند</th><th>النوع</th><th>الكمية</th><th>السعر</th></tr>
+            </thead>
+            <tbody id="ogRowsBody"></tbody>
+          </table>
+
+          <div class="footer-disclaimer">
+            <i class="fa fa-circle-info" aria-hidden="true"></i>
+            <p><strong>الأسعار مش ظاهرة هنا</strong> — دوس على "اعرف السعر" أمام كل بند عشان تشوف سعره بالتفصيل في صفحة المنتج.
+              الكميات دي بتغطي الخامات بس — <strong>مش شامل تركيب ولا نقل ولا أي رسوم إضافية</strong>. للحصول على عرض سعر نهائي دقيق، تواصل معنا مباشرة.</p>
+          </div>
+        </div>
+
+        <div class="calc-empty" id="ogEmpty">
+          <i class="fa fa-solar-panel" aria-hidden="true"></i>
+          <p>اختار الأحمال والماركات واضغط "احسب النظام" لعرض النتيجة</p>
+        </div>
+
+      </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div>
+      <strong>Al Asl Solar Energy</strong>
+      <p>sales@alaslsolar.com | +20 120 007 4344 | +966 56 127 4344</p>
+    </div>
+    <div class="social-links" aria-label="روابط التواصل">
+      <a href="https://linkedin.com/company/alaslsolar" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn"><i class="fab fa-linkedin" aria-hidden="true"></i></a>
+      <a href="https://youtube.com/@alaslsolar" target="_blank" rel="noopener noreferrer" aria-label="YouTube"><i class="fab fa-youtube" aria-hidden="true"></i></a>
+      <a href="https://facebook.com/alaslsolar" target="_blank" rel="noopener noreferrer" aria-label="Facebook"><i class="fab fa-facebook" aria-hidden="true"></i></a>
+      <a href="https://instagram.com/alaslsolar" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><i class="fab fa-instagram" aria-hidden="true"></i></a>
+      <a href="https://tiktok.com/@alaslsolar" target="_blank" rel="noopener noreferrer" aria-label="TikTok"><i class="fab fa-tiktok" aria-hidden="true"></i></a>
+    </div>
+  </footer>
+
+  <a class="whatsapp" href="https://wa.me/201200074344" target="_blank" rel="noopener noreferrer" aria-label="تواصل معنا على واتساب">
+    <i class="fab fa-whatsapp" aria-hidden="true"></i>
+  </a>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <script src="offgrid-calc-engine.js"></script>
+  <script>
+  (function () {
+    /* ============================================================
+       Default load catalogue (device power draw + typical duty
+       cycle) — engineering reference data only, no cost/price here.
+       ============================================================ */
+    const DEFAULT_LOADS = [
+      { name: 'لمبة - LED Light', watt: 10, runningFactor: 0.5, nightHours: 19, dayHours: 5, surgeFactor: 1 },
+      { name: 'DVR / NVR', watt: 25, runningFactor: 1, nightHours: 19, dayHours: 5, surgeFactor: 1 },
+      { name: 'راوتر / شاحن', watt: 15, runningFactor: 1, nightHours: 19, dayHours: 5, surgeFactor: 1 },
+      { name: 'كاميرا مراقبة', watt: 10, runningFactor: 1, nightHours: 19, dayHours: 5, surgeFactor: 1 },
+      { name: 'لابتوب', watt: 65, runningFactor: 1, nightHours: 0, dayHours: 8, surgeFactor: 1 },
+      { name: 'مروحة', watt: 70, runningFactor: 0.5, nightHours: 6, dayHours: 4, surgeFactor: 3 },
+      { name: 'شفاط مطبخ', watt: 75, runningFactor: 1, nightHours: 0, dayHours: 2, surgeFactor: 3 },
+      { name: 'تلفاز LCD / كاميرات CCTV', watt: 60, runningFactor: 1, nightHours: 19, dayHours: 5, surgeFactor: 1 },
+      { name: 'تلفاز LCD', watt: 80, runningFactor: 1, nightHours: 3, dayHours: 3, surgeFactor: 1 },
+      { name: 'ثلاجة', watt: 175, runningFactor: 0.8, nightHours: 18, dayHours: 6, surgeFactor: 7 },
+      { name: 'كشاف إنارة', watt: 200, runningFactor: 1, nightHours: 12, dayHours: 0, surgeFactor: 1 },
+      { name: 'فريزر', watt: 300, runningFactor: 0.8, nightHours: 18, dayHours: 6, surgeFactor: 7 },
+      { name: 'موتور 1 حصان', watt: 740, runningFactor: 1, nightHours: 2, dayHours: 0.25, surgeFactor: 7 },
+      { name: 'ميكروويف', watt: 1000, runningFactor: 1, nightHours: 1, dayHours: 1, surgeFactor: 1 },
+      { name: 'موتور 1.5 حصان / غاطس', watt: 1100, runningFactor: 1, nightHours: 0.5, dayHours: 2, surgeFactor: 7 },
+      { name: 'تكييف 1.5 حصان', watt: 1100, runningFactor: 0.75, nightHours: 8, dayHours: 8, surgeFactor: 7 },
+      { name: 'غسالة', watt: 1500, runningFactor: 1, nightHours: 0, dayHours: 2, surgeFactor: 7 },
+      { name: 'تكييف 2.5 حصان', watt: 1800, runningFactor: 0.5, nightHours: 8, dayHours: 8, surgeFactor: 7 },
+      { name: 'تكييف 3 حصان', watt: 2200, runningFactor: 0.5, nightHours: 8, dayHours: 8, surgeFactor: 7 },
+      { name: 'هيتر مياه', watt: 9000, runningFactor: 1, nightHours: 0, dayHours: 2, surgeFactor: 1 },
+    ];
+
+    /* Public unit prices for generic (non brand-specific) materials —
+       these are retail/customer prices already, not cost or margin
+       figures, so it's fine to keep them here. Update from admin if
+       supplier pricing changes. */
+    const GENERIC_PRICES = {
+      steelPerUnit: 1500,      // شاسيه حديد مجلفن لكل وحدة (لكل لوحين تقريبًا)
+      cablesPerMeter: 65,      // كابل 6مم لكل متر
+      cableMetersPerSteelUnit: 20,
+      accessoriesFixed: 2500,  // لوحة تجميع / MC4 / فيوز / قواطع
+      batteryChargeSunHours: 5.5,
+      systemEfficiency: 0.78,
+      defaultSurgeCapacityPct: 1.5,
+    };
+
+    let catalog = { inverters: [], batteries: [], panels: [] };
+    let addedLoadIdx = []; // indices into DEFAULT_LOADS currently shown in the "added" list
+
+    function egp(n) { return Math.round(n).toLocaleString('ar-EG') + ' ج.م'; }
+    function esc(s) { return String(s || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m])); }
+
+    /* ---------- Loads: dropdown + "add" list, instead of a big table ---------- */
+
+    function buildLoadPicker() {
+      const sel = document.getElementById('ogLoadPicker');
+      const available = DEFAULT_LOADS.map((l, i) => i).filter(i => !addedLoadIdx.includes(i));
+      sel.innerHTML = available.length
+        ? available.map(i => `<option value="${i}">${DEFAULT_LOADS[i].name} (${DEFAULT_LOADS[i].watt} وات)</option>`).join('')
+        : `<option value="">كل الأجهزة اتضافت</option>`;
+      sel.disabled = available.length === 0;
+    }
+
+    function refreshLoadsVisibility() {
+      const hasAny = addedLoadIdx.length > 0;
+      document.getElementById('ogAddedLoadsWrap').hidden = !hasAny;
+      document.getElementById('ogNoLoadsHint').hidden = hasAny;
+    }
+
+    function addLoadRow(idx) {
+      if (addedLoadIdx.includes(idx)) return;
+      addedLoadIdx.push(idx);
+      const l = DEFAULT_LOADS[idx];
+      const body = document.getElementById('ogLoadsBody');
+      const tr = document.createElement('tr');
+      tr.dataset.idx = idx;
+      tr.innerHTML = `
+        <td class="load-name">${esc(l.name)}</td>
+        <td>${l.watt}</td>
+        <td><input type="number" min="1" value="1" data-field="count"></td>
+        <td><input type="number" min="0" step="0.5" value="${l.dayHours}" data-field="dayHours"></td>
+        <td><input type="number" min="0" step="0.5" value="${l.nightHours}" data-field="nightHours"></td>
+        <td><button type="button" class="load-remove-btn" aria-label="حذف" data-remove="${idx}"><i class="fa fa-trash" aria-hidden="true"></i></button></td>`;
+      tr.querySelector('[data-remove]').addEventListener('click', () => removeLoadRow(idx));
+      body.appendChild(tr);
+      buildLoadPicker();
+      refreshLoadsVisibility();
+    }
+
+    function removeLoadRow(idx) {
+      addedLoadIdx = addedLoadIdx.filter(i => i !== idx);
+      const row = document.querySelector(`#ogLoadsBody tr[data-idx="${idx}"]`);
+      if (row) row.remove();
+      buildLoadPicker();
+      refreshLoadsVisibility();
+    }
+
+    function clearAllLoadRows() {
+      addedLoadIdx = [];
+      document.getElementById('ogLoadsBody').innerHTML = '';
+      buildLoadPicker();
+      refreshLoadsVisibility();
+    }
+
+    function readLoads() {
+      return addedLoadIdx.map(idx => {
+        const row = document.querySelector(`#ogLoadsBody tr[data-idx="${idx}"]`);
+        const l = DEFAULT_LOADS[idx];
+        const count = Number(row.querySelector('[data-field="count"]').value) || 0;
+        const dayHours = Number(row.querySelector('[data-field="dayHours"]').value) || 0;
+        const nightHours = Number(row.querySelector('[data-field="nightHours"]').value) || 0;
+        return { name: l.name, watt: l.watt, runningFactor: l.runningFactor, surgeFactor: l.surgeFactor, count, dayHours, nightHours };
+      }).filter(l => l.count > 0);
+    }
+
+    document.getElementById('ogAddLoadBtn').addEventListener('click', () => {
+      const sel = document.getElementById('ogLoadPicker');
+      if (sel.value === '') return;
+      addLoadRow(Number(sel.value));
+    });
+
+    /* ---------- Presets ("منظومات جاهزة") — admin-managed, loaded from Supabase ---------- */
+
+    async function buildPresets() {
+      const wrap = document.getElementById('ogPresets');
+      const client = (typeof getAlaslSupabase === 'function') ? getAlaslSupabase() : null;
+      if (!client) { wrap.innerHTML = ''; return; }
+      const { data, error } = await client.from('offgrid_presets').select('*').eq('is_active', true).order('sort_order');
+      if (error || !data || !data.length) { wrap.innerHTML = ''; return; }
+
+      wrap.innerHTML = data.map((p, i) => `<button type="button" class="preset-btn" data-preset="${i}" title="${esc(p.description || '')}">${esc(p.name)}</button>`).join('');
+      wrap.querySelectorAll('.preset-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const preset = data[btn.dataset.preset];
+          clearAllLoadRows();
+          (preset.items || []).forEach(item => {
+            const idx = DEFAULT_LOADS.findIndex(l => l.name === item.load);
+            if (idx < 0) return;
+            addLoadRow(idx);
+            const row = document.querySelector(`#ogLoadsBody tr[data-idx="${idx}"]`);
+            if (row) row.querySelector('[data-field="count"]').value = item.count;
+          });
+        });
+      });
+    }
+
+    function fillBrandSelect(sel, brands, placeholder, preferred) {
+      sel.innerHTML = brands.length
+        ? brands.map(b => `<option value="${esc(b)}" ${b === preferred ? 'selected' : ''}>${esc(b)}</option>`).join('')
+        : `<option value="">${placeholder}</option>`;
+    }
+
+    // Populate the "قدرة اللوح" dropdown with the real, distinct wattages
+    // actually registered for the currently-selected panel brand — only
+    // real product rows the admin entered, never a guessed default.
+    function updatePanelWattOptions() {
+      const brand = document.getElementById('ogPanelBrand').value;
+      const sel = document.getElementById('ogPanelWatt');
+      const options = catalog.panels.filter(p => p.brand === brand && p.power);
+      const distinctWatts = [...new Set(options.map(p => p.power))].sort((a, b) => a - b);
+      sel.innerHTML = distinctWatts.length
+        ? distinctWatts.map(w => `<option value="${w}">${w} وات</option>`).join('')
+        : `<option value="">لا توجد قدرة مسجلة لهذه الماركة</option>`;
+    }
+
+    /* ---------- Catalog: only products that actually have a price, per calc_settings ---------- */
+
+    async function loadCatalog() {
+      const client = (typeof getAlaslSupabase === 'function') ? getAlaslSupabase() : null;
+      if (!client) return;
+
+      const { data: settings } = await client.from('calc_settings').select('*').eq('id', 1).single();
+      if (settings && settings.offgrid_enabled === false) {
+        document.getElementById('ogDisabledState').hidden = false;
+        document.getElementById('ogCalcWrapOuter').hidden = true;
+        return;
+      }
+
+      const { data, error } = await client.from('products')
+        .select('category,brand,model_available,price,voltage_v,power_kw,surge_capacity_pct,pv_voc_max,pv_mppt_min,pv_mppt_max,capacity_ah,dod,power_watt,vimp,voc,in_stock,published')
+        .in('category', ['offgrid', 'batteries', 'panels']);
+      if (error || !data) { console.error('offgrid catalog load error:', error); return; }
+
+      const hasPrice = r => r.price != null && Number(r.price) > 0;
+
+      catalog.inverters = data.filter(r => r.category === 'offgrid' && r.in_stock !== false && r.published !== false && hasPrice(r))
+        .map(r => ({ brand: r.brand, type: r.model_available || '', voltage: Number(r.voltage_v), powerKW: Number(r.power_kw),
+          surgeCapacityPct: r.surge_capacity_pct ? Number(r.surge_capacity_pct) : null,
+          pvVocMax: r.pv_voc_max ? Number(r.pv_voc_max) : null, pvMpptMin: r.pv_mppt_min ? Number(r.pv_mppt_min) : null,
+          pvMpptMax: r.pv_mppt_max ? Number(r.pv_mppt_max) : null, unitPrice: Number(r.price) }))
+        .filter(r => r.powerKW && r.voltage);
+
+      catalog.batteries = data.filter(r => r.category === 'batteries' && r.in_stock !== false && r.published !== false && hasPrice(r))
+        .map(r => ({ brand: r.brand, voltage: Number(r.voltage_v), ah: Number(r.capacity_ah),
+          dod: r.dod ? Number(r.dod) : null, unitPrice: Number(r.price) }))
+        .filter(r => r.voltage && r.ah && r.dod);
+
+      // panel price on this site is EGP per watt for every brand, hence pricePerWatt
+      catalog.panels = data.filter(r => r.category === 'panels' && r.in_stock !== false && r.published !== false && hasPrice(r))
+        .map(r => ({ brand: r.brand, power: r.power_watt ? Number(r.power_watt) : null,
+          voc: r.voc ? Number(r.voc) : null, vimp: r.vimp ? Number(r.vimp) : null, pricePerWatt: Number(r.price) }));
+
+      const invBrands = [...new Set(catalog.inverters.map(r => r.brand))].sort();
+      const battBrands = [...new Set(catalog.batteries.map(r => r.brand))].sort();
+      const panelBrands = [...new Set(catalog.panels.map(r => r.brand))].sort();
+      fillBrandSelect(document.getElementById('ogInvBrand'), invBrands, 'لا توجد انفرترات منشورة بسعر', settings && settings.preferred_offgrid_inverter_brand);
+      fillBrandSelect(document.getElementById('ogBattBrand'), battBrands, 'لا توجد بطاريات منشورة بسعر', settings && settings.preferred_offgrid_battery_brand);
+      fillBrandSelect(document.getElementById('ogPanelBrand'), panelBrands, 'لا توجد ألواح منشورة بسعر', settings && settings.preferred_offgrid_panel_brand);
+      updatePanelWattOptions();
+      document.getElementById('ogPanelBrand').addEventListener('change', updatePanelWattOptions);
+    }
+
+    /* ---------- Results: quantities only, price hidden behind a per-product link ---------- */
+
+    function productLink(category, brand, model) {
+      return `product-detail.html?cat=${encodeURIComponent(category)}&brand=${encodeURIComponent(brand || '')}&model=${encodeURIComponent(model || '')}`;
+    }
+
+    function renderResults(result) {
+      const empty = document.getElementById('ogEmpty');
+      const panel = document.getElementById('ogResults');
+      if (result.errors && result.errors.length && !result.offer) {
+        empty.hidden = false;
+        panel.hidden = true;
+        empty.innerHTML = `<i class="fa fa-triangle-exclamation" aria-hidden="true"></i><p>${result.errors.join('<br>')}</p>`;
+        return;
+      }
+      empty.hidden = true;
+      panel.hidden = false;
+
+      document.getElementById('ogMetrics').innerHTML = `
+        <div class="metric-card brand"><div class="metric-label">قدرة الانفرتر</div><div class="metric-value">${result.inv.powerKW}</div><div class="metric-unit">كيلوواط</div></div>
+        <div class="metric-card accent"><div class="metric-label">سعة التخزين</div><div class="metric-value">${(result.storedKWh).toFixed(1)}</div><div class="metric-unit">كيلوواط.ساعة</div></div>
+        <div class="metric-card"><div class="metric-label">عدد الألواح</div><div class="metric-value">${result.panelCount}</div><div class="metric-unit">لوح</div></div>
+        <div class="metric-card"><div class="metric-label">عدد البطاريات</div><div class="metric-value">${result.batteryCount}</div><div class="metric-unit">بطارية</div></div>
+      `;
+
+      const notesHtml = (result.errors || []).map(e =>
+        `<div class="calc-note warn"><i class="fa fa-triangle-exclamation" aria-hidden="true"></i><p>${e}</p></div>`).join('');
+      document.getElementById('ogNotes').innerHTML = notesHtml;
+
+      const linkFor = {
+        'الألواح': productLink('panels', result.panel.brand, ''),
+        'انفرتر': productLink('offgrid', result.inv.brand, result.inv.type),
+        'بطاريات': productLink('batteries', result.batt.brand, ''),
+      };
+      document.getElementById('ogRowsBody').innerHTML = result.rows.map(r => `
+        <tr>
+          <td>${esc(r.name)}</td><td>${esc(r.type)}</td><td>${r.qty}</td>
+          <td>${linkFor[r.name] ? `<a href="${linkFor[r.name]}" target="_blank" class="btn-light" style="padding:5px 12px;font-size:12px;height:auto;">اعرف السعر</a>` : '<span style="color:var(--muted);font-size:12px;">تواصل معنا</span>'}</td>
+        </tr>`).join('');
+
+      window.__lastOffgridResult = result;
+    }
+
+    document.getElementById('ogCalcBtn').addEventListener('click', () => {
+      const inputs = {
+        loads: readLoads(),
+        morningEnabled: document.getElementById('ogMorning').checked,
+        nightEnabled: document.getElementById('ogNight').checked,
+        psh: document.getElementById('ogPsh').value,
+        safetyFactor: document.getElementById('ogSafety').value,
+        autonomyDays: document.getElementById('ogAutonomy').value,
+        phase: document.getElementById('ogPhase').value,
+        invBrand: document.getElementById('ogInvBrand').value,
+        battBrand: document.getElementById('ogBattBrand').value,
+        panelBrand: document.getElementById('ogPanelBrand').value,
+        panelWatt: document.getElementById('ogPanelWatt').value,
+      };
+      if (!inputs.loads.length) {
+        renderResults({ errors: ['اختار جهاز واحد على الأقل وحدد عدده، أو اضغط على أحد النماذج الجاهزة فوق.'] });
+        return;
+      }
+      const result = window.computeOffgridMaterials(catalog, GENERIC_PRICES, inputs);
+      renderResults(result);
+    });
+
+    buildLoadPicker();
+    refreshLoadsVisibility();
+    buildPresets();
+    loadCatalog();
+  })();
+  </script>
+</body>
+</html>
